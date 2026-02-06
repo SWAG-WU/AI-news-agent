@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI资讯数据源配置",
+  "description": "定义AI资讯采集的数据源及其优先级",
+
+  "sources": [
+    {
+      "id": "arxiv_cs_ai",
+      "name": "arXiv CS.AI",
+      "type": "academic",
+      "priority": 1,
+      "enabled": true,
+      "config": {
+        "base_url": "http://export.arxiv.org/api/query",
+        "search_query": "cat:cs.AI OR cat:cs.CL OR cat:cs.LG",
+        "max_results": 50,
+        "sort_by": "submittedDate",
+        "sort_order": "descending"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      }
+    },
+    {
+      "id": "huggingface_blog",
+      "name": "HuggingFace Blog",
+      "type": "blog",
+      "priority": 2,
+      "enabled": true,
+      "config": {
+        "rss_url": "https://huggingface.co/blog/feed.xml",
+        "base_url": "https://huggingface.co"
+      }
+    },
+    {
+      "id": "github_trending_ai",
+      "name": "GitHub Trending (AI)",
+      "type": "code",
+      "priority": 2,
+      "enabled": true,
+      "config": {
+        "base_url": "https://github.com/trending",
+        "languages": ["Python", "Jupyter Notebook", "C++"],
+        "spoken_language": "en",
+        "since": "daily"
+      }
+    },
+    {
+      "id": "openai_blog",
+      "name": "OpenAI Blog",
+      "type": "blog",
+      "priority": 3,
+      "enabled": true,
+      "config": {
+        "rss_url": "https://openai.com/blog/rss.xml",
+        "base_url": "https://openai.com"
+      }
+    },
+    {
+      "id": "anthropic_blog",
+      "name": "Anthropic Blog",
+      "type": "blog",
+      "priority": 3,
+      "enabled": true,
+      "config": {
+        "rss_url": "https://www.anthropic.com/news/rss",
+        "base_url": "https://www.anthropic.com"
+      }
+    },
+    {
+      "id": "meta_ai_blog",
+      "name": "Meta AI Blog",
+      "type": "blog",
+      "priority": 3,
+      "enabled": true,
+      "config": {
+        "rss_url": "https://ai.meta.com/blog/feed/",
+        "base_url": "https://ai.meta.com/blog"
+      }
+    },
+    {
+      "id": "google_deepmind",
+      "name": "Google DeepMind Blog",
+      "type": "blog",
+      "priority": 3,
+      "enabled": true,
+      "config": {
+        "rss_url": "https://deepmind.google/discover/blog/feed.xml",
+        "base_url": "https://deepmind.google"
+      }
+    },
+    {
+      "id": "neurips",
+      "name": "NeurIPS",
+      "type": "conference",
+      "priority": 4,
+      "enabled": true,
+      "config": {
+        "base_url": "https://neurips.cc",
+        "news_url": "https://neurips.cc/news"
+      }
+    },
+    {
+      "id": "icml",
+      "name": "ICML",
+      "type": "conference",
+      "priority": 4,
+      "enabled": true,
+      "config": {
+        "base_url": "https://icml.cc",
+        "news_url": "https://icml.cc/virtual/2024/news"
+      }
+    },
+    {
+      "id": "mit_tech_review",
+      "name": "MIT Technology Review (AI)",
+      "type": "media",
+      "priority": 5,
+      "enabled": true,
+      "config": {
+        "rss_url": "https://www.technologyreview.com/feed/",
+        "base_url": "https://www.technologyreview.com",
+        "topic": "artificial-intelligence"
+      }
+    },
+    {
+      "id": "nature_ai",
+      "name": "Nature AI",
+      "type": "media",
+      "priority": 5,
+      "enabled": true,
+      "config": {
+        "rss_url": "https://www.nature.com/nmachintelligence/rss.xml",
+        "base_url": "https://www.nature.com"
+      }
+    },
+    {
+      "id": "the_verge_ai",
+      "name": "The Verge (AI)",
+      "type": "media",
+      "priority": 5,
+      "enabled": true,
+      "config": {
+        "rss_url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "base_url": "https://www.theverge.com"
+      }
+    }
+  ],
+
+  "fallback_sources": [
+    {
+      "id": "machine_learning_mastery",
+      "name": "Machine Learning Mastery",
+      "type": "blog",
+      "priority": 6,
+      "enabled": false,
+      "config": {
+        "base_url": "https://machinelearningmastery.com",
+        "rss_url": "https://machinelearningmastery.com/feed/"
+      }
+    }
+  ]
+}

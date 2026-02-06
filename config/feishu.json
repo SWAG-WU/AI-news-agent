@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "飞书机器人配置",
+  "description": "飞书群机器人webhook推送配置",
+
+  "webhook": {
+    "enabled": true,
+    "url": "${FEISHU_WEBHOOK_URL}",
+    "secret": "${FEISHU_WEBHOOK_SECRET}",
+    "note": "飞书机器人webhook配置（从环境变量读取）"
+  },
+
+  "message": {
+    "msg_type": "text",
+    "content_type": "markdown",
+
+    "card": {
+      "enabled": false,
+      "note": "设置为true可使用飞书卡片消息，更美观但需要额外配置"
+    },
+
+    "header": {
+      "title": {
+        "tag": "plain_text",
+        "content": "AI前沿日报"
+      },
+      "template": "orange"
+    }
+  },
+
+  "schedule": {
+    "enabled": true,
+    "cron": "0 9 * * *",
+    "timezone": "Asia/Shanghai",
+    "description": "每天早上9点推送"
+  },
+
+  "retry": {
+    "max_retries": 3,
+    "retry_interval_seconds": 300,
+    "description": "推送失败后重试3次，每次间隔5分钟"
+  },
+
+  "testing": {
+    "mode": false,
+    "description": "测试模式：true时输出到文件不推送，false时实际推送",
+    "test_output_path": "data/test_output.md"
+  },
+
+  "notification": {
+    "notify_on_success": false,
+    "notify_on_failure": true,
+    "failure_notification_webhook": ""
+  },
+
+  "rate_limit": {
+    "enabled": true,
+    "max_messages_per_minute": 20,
+    "description": "飞书API限流保护"
+  }
+}

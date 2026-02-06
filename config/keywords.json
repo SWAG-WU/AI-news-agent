@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "关键词过滤配置",
+  "description": "定义筛选AI资讯的关键词，按类别分组",
+
+  "categories": {
+    "tech": {
+      "name": "核心技术",
+      "description": "AI领域核心技术和架构相关关键词",
+      "keywords": [
+        "large language model",
+        "LLM",
+        "foundation model",
+        "multi-modal",
+        "multimodal",
+        "vision-language model",
+        "VLM",
+        "diffusion model",
+        "transformer",
+        "attention mechanism",
+        "neural network",
+        "deep learning",
+        "reinforcement learning",
+        "RLHF",
+        "RLAIF",
+        "AGI",
+        "general intelligence"
+      ]
+    },
+    "reasoning": {
+      "name": "推理与认知",
+      "description": "推理、思维链等认知能力相关",
+      "keywords": [
+        "reasoning",
+        "chain of thought",
+        "CoT",
+        "thinking",
+        "cognitive",
+        "logic",
+        "inference",
+        "o1",
+        "system 2",
+        "deliberation"
+      ]
+    },
+    "application": {
+      "name": "应用场景",
+      "description": "AI具体应用和部署方式",
+      "keywords": [
+        "fine-tuning",
+        "finetuning",
+        "RAG",
+        "retrieval augmented generation",
+        "agents",
+        "AI agents",
+        "autonomous agents",
+        "robotics",
+        "embodied AI",
+        "code generation",
+        "copilot",
+        "assistant",
+        "chatbot"
+      ]
+    },
+    "safety": {
+      "name": "安全与对齐",
+      "description": "AI安全、对齐、伦理相关",
+      "keywords": [
+        "alignment",
+        "AI safety",
+        "safety",
+        "red teaming",
+        "adversarial",
+        "jailbreak",
+        "prompt injection",
+        "policy",
+        "regulation",
+        "ethics",
+        "bias",
+        "fairness",
+        "transparency",
+        "interpretability",
+        "explainability"
+      ]
+    },
+    "infrastructure": {
+      "name": "基础设施",
+      "description": "训练、推理、部署相关基础设施",
+      "keywords": [
+        "GPU",
+        "TPU",
+        "training",
+        "inference",
+        "optimization",
+        "quantization",
+        "distillation",
+        "serving",
+        "scalability",
+        "distributed training",
+        "gradient accumulation",
+        "memory optimization"
+      ]
+    },
+    "data": {
+      "name": "数据集与基准",
+      "description": "数据集、基准测试、评估相关",
+      "keywords": [
+        "dataset",
+        "benchmark",
+        "evaluation",
+        "leaderboard",
+        "new dataset",
+        "training data",
+        "synthetic data",
+        "data quality"
+      ]
+    },
+    "product": {
+      "name": "产品与发布",
+      "description": "公司产品发布、更新、API相关",
+      "keywords": [
+        "API update",
+        "release",
+        "launch",
+        "announcement",
+        "GPT",
+        "Claude",
+        "Gemini",
+        "Llama",
+        "open source",
+        "open-source",
+        "model release",
+        "product update"
+      ]
+    }
+  },
+
+  "excluded_keywords": {
+    "name": "排除关键词",
+    "description": "这些关键词出现时降低该资讯的优先级或直接过滤",
+    "keywords": [
+      "clickbait",
+      "sponsored",
+      "advertisement",
+      "非AI",
+      "unrelated"
+    ]
+  },
+
+  "alias_mapping": {
+    "description": "关键词别名映射，用于统一不同表述",
+    "mappings": {
+      "LLM": ["large language model", "large language models"],
+      "fine-tuning": ["finetuning", "fine tuning", "fine-tuned"],
+      "multi-modal": ["multimodal", "multi modal"]
+    }
+  }
+}

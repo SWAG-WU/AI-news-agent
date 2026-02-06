@@ -1,0 +1,2 @@
+# 此文件用于保留 cache 目录在 git 中
+# 实际缓存文件会被 .gitignore 忽略

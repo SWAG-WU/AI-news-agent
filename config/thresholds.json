@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "筛选阈值配置",
+  "description": "定义判断'重大更新'的各类阈值",
+
+  "arxiv": {
+    "min_citations": 10,
+    "min_scites": 5,
+    "check_arxiv_sanity": true,
+    "min_sanity_score": 20
+  },
+
+  "github": {
+    "trending": {
+      "enabled": true,
+      "check_trending": true,
+      "min_trending_rank": 50,
+      "since": "daily"
+    },
+    "stars": {
+      "min_stars": 100,
+      "min_stars_daily": 20
+    },
+    "forks": {
+      "min_forks": 20
+    }
+  },
+
+  "huggingface": {
+    "min_likes": 50,
+    "min_downloads": 1000,
+    "trending_check": true
+  },
+
+  "content": {
+    "min_title_length": 10,
+    "max_title_length": 200,
+    "min_description_length": 50,
+    "required_categories_count": 1
+  },
+
+  "time": {
+    "primary_window_hours": 24,
+    "secondary_window_hours": 48,
+    "fallback_window_days": 7
+  },
+
+  "daily_output": {
+    "max_items_per_category": {
+      "highlights": 3,
+      "tech_breakthrough": 10,
+      "industry_news": 8,
+      "policy": 5,
+      "expert_opinion": 3
+    },
+    "min_total_items": 5,
+    "fallback_min_total_items": 3
+  },
+
+  "scoring": {
+    "description": "资讯评分权重，总分高于此值视为'重大更新'",
+    "weights": {
+      "source_priority": 0.3,
+      "keyword_match": 0.3,
+      "recency": 0.2,
+      "engagement": 0.2
+    },
+    "min_score": 0.6,
+    "high_score_threshold": 0.8
+  },
+
+  "deduplication": {
+    "enabled": true,
+    "method": "url_hash",
+    "similarity_threshold": 0.85,
+    "content_hash_algorithm": "sha256"
+  },
+
+  "retry": {
+    "max_retries": 3,
+    "retry_delay_seconds": 5,
+    "timeout_seconds": 30
+  }
+}
