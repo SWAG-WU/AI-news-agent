@@ -2,6 +2,7 @@
 
 # LLM API
 zhipuai>=2.1.0
+sniffio>=1.3.0
 
 # HTTP 请求
 aiohttp>=3.9.0
