@@ -39,7 +39,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install openai
 
       # 4. 创建必要的目录
       - name: 创建目录
@@ -56,14 +55,11 @@ jobs:
           # 飞书签名验证密钥（可选，增强安全性）
           FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
 
-          # ========== LLM API 配置 ==========
-          # 注意：项目使用智谱 AI（通过 OpenAI 兼容接口），不是 Claude
+          # ========== 智谱 AI API 配置 ==========
           # API Key（必需）
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          # API Base URL（必需，智谱 AI: https://open.bigmodel.cn/api/paas/v4/）
-          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
-          # 模型名称（必需，如: glm-4-flash）
-          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
+          # 模型名称（必需，如: glm-4-flash / glm-4-plus）
+          ZHIPUAI_MODEL: ${{ secrets.ZHIPUAI_MODEL }}
 
           # ========== GitHub 配置 ==========
           # GitHub Token（可选，用于访问 GitHub API 提高 rate limit）

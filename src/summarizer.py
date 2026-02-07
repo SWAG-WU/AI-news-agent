@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import json
 
-from openai import AsyncOpenAI
+from zhipuai import ZhipuAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.config import Config, get_config
@@ -23,19 +23,16 @@ class LLMSummarizer:
     """
     LLM摘要生成器
 
-    使用OpenAI API生成中文摘要。
+    使用智谱AI API生成中文摘要。
     """
 
     def __init__(self, config: Optional[Config] = None):
         self.config = config or get_config()
         self.prompts_dir = Path("prompts")
 
-        # 初始化OpenAI客户端
-        self.client = AsyncOpenAI(
-            api_key=self.config.openai_api_key,
-            base_url=self.config.openai_base_url,
-        )
-        self.model = self.config.openai_model
+        # 初始化智谱AI客户端
+        self.client = ZhipuAI(api_key=self.config.zhipuai_api_key)
+        self.model = self.config.zhipuai_model
 
         # 加载提示词模板
         self._prompt_template = self._load_prompt_template()
@@ -121,20 +118,26 @@ class LLMSummarizer:
         """调用LLM生成摘要"""
         prompt = self._prompt_template.replace("{{CONTENT}}", content)
 
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "你是一位专业的AI科技资讯编辑，擅长生成简洁准确的中文摘要。"
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0.3,
-            max_tokens=200,
+        # 使用智谱AI的同步API（在异步上下文中运行）
+        import asyncio
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "你是一位专业的AI科技资讯编辑，擅长生成简洁准确的中文摘要。"
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.3,
+                max_tokens=200,
+            )
         )
 
         summary = response.choices[0].message.content.strip()

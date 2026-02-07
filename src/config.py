@@ -273,10 +273,9 @@ class EnvSettings(BaseSettings):
     feishu_webhook_url: str
     feishu_webhook_secret: str = ""
 
-    # LLM API
-    openai_api_key: str = ""
-    openai_base_url: str = "https://api.openai.com/v1"
-    openai_model: str = "gpt-4o-mini"
+    # 智谱 AI API
+    zhipuai_api_key: str = ""
+    zhipuai_model: str = "glm-4-flash"
 
     # GitHub
     github_token: str = ""
@@ -340,16 +339,12 @@ class Config:
     # ==================== 便捷访问方法 ====================
 
     @property
-    def openai_api_key(self) -> str:
-        return self._env.openai_api_key
+    def zhipuai_api_key(self) -> str:
+        return self._env.zhipuai_api_key
 
     @property
-    def openai_base_url(self) -> str:
-        return self._env.openai_base_url
-
-    @property
-    def openai_model(self) -> str:
-        return self._env.openai_model
+    def zhipuai_model(self) -> str:
+        return self._env.zhipuai_model
 
     @property
     def github_token(self) -> str:

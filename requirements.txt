@@ -1,5 +1,8 @@
 # AI 前沿资讯收集 Agent - 依赖包
 
+# LLM API
+zhipuai>=2.1.0
+
 # HTTP 请求
 aiohttp>=3.9.0
 httpx>=0.25.0
