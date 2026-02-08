@@ -78,7 +78,7 @@ class FeishuFormatter:
         return report
 
     def _categorize_articles(self, articles: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
-        """将文章按分类整理"""
+        """将文章按分类整理，并按发布时间降序排序（最新的在前）"""
         categorized = {
             "highlights": [],
             "tech": [],
@@ -102,6 +102,13 @@ class FeishuFormatter:
                     categorized[category].append(article)
                 else:
                     categorized["tech"].append(article)
+
+        # 按发布时间降序排序（最新的在前），published_at 为空的排在最后
+        for category_key in categorized:
+            categorized[category_key].sort(
+                key=lambda x: x.get("published_at") or "1970-01-01T00:00:00Z",
+                reverse=True
+            )
 
         return categorized
 
@@ -145,30 +152,58 @@ class FeishuFormatter:
         source = article.get("source", "")
         author = article.get("author", "")
         institution = article.get("institution", "")
+        published_at = article.get("published_at", "")
+
+        # 格式化发布时间
+        formatted_time = self._format_published_time(published_at)
 
         # 根据分类使用不同格式
         if category == "highlights":
-            return self._format_highlight(title, summary)
+            return self._format_highlight(title, summary, formatted_time)
         elif category == "tech":
-            return self._format_tech_article(title, summary, author, institution, url)
+            return self._format_tech_article(title, summary, author, institution, url, formatted_time)
         elif category == "industry":
-            return self._format_industry_article(title, summary, source, url)
+            return self._format_industry_article(title, summary, source, url, formatted_time)
         elif category == "policy":
-            return self._format_policy_article(title, summary, url)
+            return self._format_policy_article(title, summary, url, formatted_time)
         elif category == "opinion":
-            return self._format_opinion_article(title, summary, author, url)
+            return self._format_opinion_article(title, summary, author, url, formatted_time)
         else:
-            return self._format_default_article(title, summary, url)
+            return self._format_default_article(title, summary, url, formatted_time)
 
-    def _format_highlight(self, title: str, summary: str) -> str:
+    def _format_published_time(self, published_at: str) -> str:
+        """格式化发布时间为中文友好格式"""
+        if not published_at:
+            return ""
+
+        try:
+            # 尝试解析 ISO 格式时间
+            for fmt in ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%fZ",
+                       "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S"]:
+                try:
+                    dt = datetime.strptime(published_at.replace("Z", ""), "%Y-%m-%dT%H:%M:%S")
+                    # 转换为北京时间 (UTC+8)
+                    from datetime import timedelta
+                    dt_beijing = dt + timedelta(hours=8)
+                    return dt_beijing.strftime("%m月%d日 %H:%M")
+                except ValueError:
+                    continue
+            return published_at
+        except Exception:
+            return published_at
+
+    def _format_highlight(self, title: str, summary: str, formatted_time: str = "") -> str:
         """格式化亮点文章"""
         lines = []
         lines.append(f"• {title}")
+        if formatted_time:
+            lines.append(f"🕒 {formatted_time}")
         lines.append(f"{summary[:150]}")  # 限制长度
         return "\n".join(lines)
 
     def _format_tech_article(self, title: str, summary: str,
-                            author: str, institution: str, url: str) -> str:
+                            author: str, institution: str, url: str,
+                            formatted_time: str = "") -> str:
         """格式化技术突破文章"""
         lines = []
         lines.append(f"• {title}")
@@ -179,6 +214,8 @@ class FeishuFormatter:
         elif author:
             lines.append(f"（{author}）")
 
+        if formatted_time:
+            lines.append(f"🕒 {formatted_time}")
         lines.append(f"{summary[:200]}")
         if url:
             lines.append(f"[链接]({url})")
@@ -186,37 +223,49 @@ class FeishuFormatter:
         return "\n".join(lines)
 
     def _format_industry_article(self, title: str, summary: str,
-                                 source: str, url: str) -> str:
+                                 source: str, url: str,
+                                 formatted_time: str = "") -> str:
         """格式化行业动态文章"""
         lines = []
         lines.append(f"• {source}：{title}")
+        if formatted_time:
+            lines.append(f"🕒 {formatted_time}")
         lines.append(f"{summary[:150]}")
         if url:
             lines.append(f"[链接]({url})")
         return "\n".join(lines)
 
-    def _format_policy_article(self, title: str, summary: str, url: str) -> str:
+    def _format_policy_article(self, title: str, summary: str, url: str,
+                              formatted_time: str = "") -> str:
         """格式化政策伦理文章"""
         lines = []
         lines.append(f"• {title}")
+        if formatted_time:
+            lines.append(f"🕒 {formatted_time}")
         lines.append(f"{summary[:150]}")
         if url:
             lines.append(f"[链接]({url})")
         return "\n".join(lines)
 
     def _format_opinion_article(self, title: str, summary: str,
-                                author: str, url: str) -> str:
+                                author: str, url: str,
+                                formatted_time: str = "") -> str:
         """格式化专家观点文章"""
         lines = []
         lines.append(f"• {author}：「{title}」")
+        if formatted_time:
+            lines.append(f"🕒 {formatted_time}")
         if url:
             lines.append(f"[出处]({url})")
         return "\n".join(lines)
 
-    def _format_default_article(self, title: str, summary: str, url: str) -> str:
+    def _format_default_article(self, title: str, summary: str, url: str,
+                               formatted_time: str = "") -> str:
         """默认格式"""
         lines = []
         lines.append(f"• {title}")
+        if formatted_time:
+            lines.append(f"🕒 {formatted_time}")
         lines.append(f"{summary[:150]}")
         if url:
             lines.append(f"[链接]({url})")
