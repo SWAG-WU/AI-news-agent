@@ -366,11 +366,22 @@ class SQLiteStorage:
                 "%Y-%m-%dT%H:%M:%S",
                 "%Y-%m-%dT%H:%M:%SZ",
                 "%Y-%m-%d",
+                # RFC 2822 format (RSS常用格式)
+                "%a, %d %b %Y %H:%M:%S %z",
+                "%a, %d %b %Y %H:%M:%S GMT",
             ):
                 try:
                     return datetime.strptime(dt_str, fmt)
                 except ValueError:
                     continue
+
+            # 尝试使用 email.utils 解析 RFC 2822 格式
+            try:
+                from email.utils import parsedate_to_datetime
+                return parsedate_to_datetime(dt_str)
+            except Exception:
+                pass
+
             return None
         except Exception:
             return None

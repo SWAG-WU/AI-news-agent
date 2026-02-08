@@ -24,6 +24,7 @@ from src.summarizer import create_summarizer
 from src.filters.deduplicator import Deduplicator
 from src.filters.keyword_filter import KeywordFilter
 from src.filters.threshold_filter import ThresholdFilter
+from src.filters.time_filter import TimeFilter
 from src.formatter import FeishuFormatter
 from src.sender import create_sender
 
@@ -60,6 +61,8 @@ class AINewsAgent:
             ThresholdFilter(self.config),
         ]
         self.deduplicator = Deduplicator(self.storage, self.config)
+        # 时间过滤器（用于确保近期资讯占比 > 80%）
+        self.time_filter = TimeFilter(self.config) if self.config.thresholds.time_filter.enabled else None
         # 测试模式使用模拟摘要生成器
         use_mock = self.config.is_test_mode()
         self.summarizer = create_summarizer(self.config, mock=use_mock)
@@ -88,22 +91,25 @@ class AINewsAgent:
             # 1. 采集资讯
             raw_news = await self._collect_news()
 
-            # 2. 过滤资讯
+            # 2. 过滤资讯（关键词和阈值）
             filtered_news = await self._filter_news(raw_news)
 
             # 3. 去重
             unique_news = await self._deduplicate_news(filtered_news)
 
-            # 4. 生成摘要
-            summarized_news = await self._summarize_news(unique_news)
+            # 4. 应用时间过滤器（确保 10 条输出，80% 近期）
+            time_filtered_news = await self._apply_time_filter(unique_news)
 
-            # 5. 格式化输出
+            # 5. 生成摘要
+            summarized_news = await self._summarize_news(time_filtered_news)
+
+            # 6. 格式化输出
             report = await self._format_report(summarized_news)
 
-            # 6. 推送
+            # 7. 推送
             await self._send_report(report)
 
-            # 7. 保存历史
+            # 8. 保存历史
             await self._save_history(summarized_news)
 
             logger.info("=" * 50)
@@ -136,11 +142,30 @@ class AINewsAgent:
         logger.info("Step 2: 过滤资讯...")
         filtered = news
 
+        # 应用基本过滤器
         for filter_obj in self.filters:
             before = len(filtered)
             filtered = filter_obj.filter(filtered)
             after = len(filtered)
             logger.info(f"  {filter_obj.__class__.__name__}: {before} -> {after}")
+
+        return filtered
+
+    async def _apply_time_filter(self, news: list) -> list:
+        """应用时间过滤器，确保每日输出满足数量和比例要求"""
+        logger.info("Step 2.5: 应用时间过滤器...")
+
+        if not self.time_filter:
+            return news
+
+        # 使用新的时间过滤方法，确保输出 10 条（80% 近期，20% 历史）
+        filtered = self.time_filter.filter_for_daily_output(news)
+
+        # 输出统计信息
+        stats = self.time_filter.get_stats(filtered)
+        logger.info(f"  最终输出: {len(filtered)} 条")
+        logger.info(f"  时间范围: {stats['cutoff_date'][:10]} 至 {stats['today'][:10]}")
+        logger.info(f"  近期比例: {stats['recent_count']}/{stats['total']} ({stats['recent_ratio']:.1%})")
 
         return filtered
 
