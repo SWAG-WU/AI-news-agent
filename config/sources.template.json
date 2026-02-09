@@ -1,0 +1,256 @@
+{
+  "$schema": "./schemas/source.schema.json",
+  "title": "AI资讯信息源配置",
+  "description": "统一的信息源配置模板，支持RSS、API、爬虫等多种采集方式",
+
+  "sources": [
+    {
+      "metadata": {
+        "id": "example_rss_source",
+        "name": "示例RSS源",
+        "description": "这是一个RSS类型的信息源配置示例",
+        "version": "1.0.0",
+        "homepage": "https://example.com",
+        "icon": "📰",
+        "tags": ["example", "rss"]
+      },
+      "categorization": {
+        "category": "media",
+        "type": "rss",
+        "priority": 5,
+        "language": "en"
+      },
+      "collector": {
+        "type": "rss",
+        "rss_url": "https://example.com/rss.xml",
+        "base_url": "https://example.com",
+        "update_frequency": "daily",
+        "item_limit": 50
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {
+        "include_keywords": ["AI", "machine learning"],
+        "exclude_keywords": ["advertisement", "sponsored"],
+        "time_range": {
+          "max_age_hours": 168
+        }
+      },
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
+        "enabled": true,
+        "stable": false,
+        "notes": "配置示例，请在实际使用前修改"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+
+    {
+      "metadata": {
+        "id": "example_api_source",
+        "name": "示例API源",
+        "description": "这是一个API类型的信息源配置示例",
+        "version": "1.0.0",
+        "homepage": "https://api.example.com",
+        "icon": "🔌",
+        "tags": ["example", "api"]
+      },
+      "categorization": {
+        "category": "tools",
+        "type": "api",
+        "priority": 3,
+        "language": "en"
+      },
+      "collector": {
+        "type": "api",
+        "base_url": "https://api.example.com",
+        "endpoint": "/v1/items",
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json"
+        },
+        "params": {
+          "limit": 50,
+          "sort": "newest"
+        },
+        "response_format": "json",
+        "data_path": "data.items"
+      },
+      "authentication": {
+        "type": "api_key",
+        "api_key": "${API_KEY}",
+        "api_key_header": "X-API-Key"
+      },
+      "rate_limit": {
+        "requests_per_minute": 60
+      },
+      "filters": {
+        "min_score": 10
+      },
+      "status": {
+        "enabled": false,
+        "notes": "需要配置API密钥"
+      }
+    },
+
+    {
+      "metadata": {
+        "id": "example_scraper_source",
+        "name": "示例爬虫源",
+        "description": "这是一个爬虫类型的信息源配置示例",
+        "version": "1.0.0",
+        "homepage": "https://example.com",
+        "icon": "🕷️",
+        "tags": ["example", "scraper"]
+      },
+      "categorization": {
+        "category": "tools",
+        "type": "scraper",
+        "priority": 4,
+        "language": "en"
+      },
+      "collector": {
+        "type": "scraper",
+        "url": "https://example.com/latest",
+        "base_url": "https://example.com",
+        "selectors": {
+          "container": ".article-item",
+          "title": ".title",
+          "url": "a.permalink",
+          "description": ".excerpt",
+          "author": ".author-name",
+          "published_at": "time[datetime]",
+          "score": ".points"
+        },
+        "render_js": false
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 5
+      },
+      "extraction": {
+        "cleanup_html": true,
+        "truncate_length": 1000
+      },
+      "filters": {
+        "time_range": {
+          "max_age_hours": 24
+        }
+      },
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 30
+      },
+      "status": {
+        "enabled": false,
+        "notes": "爬虫需要稳定的页面结构"
+      }
+    },
+
+    {
+      "metadata": {
+        "id": "example_newsletter_source",
+        "name": "示例Newsletter源",
+        "description": "这是一个Newsletter类型的信息源配置示例",
+        "version": "1.0.0",
+        "homepage": "https://example.com",
+        "icon": "📧",
+        "tags": ["example", "newsletter"]
+      },
+      "categorization": {
+        "category": "newsletter",
+        "type": "newsletter",
+        "priority": 2,
+        "language": "en"
+      },
+      "collector": {
+        "type": "newsletter",
+        "url": "https://example.com/newsletter/archive",
+        "extractor": "html"
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_hour": 10
+      },
+      "filters": {
+        "time_range": {
+          "max_age_hours": 168
+        }
+      },
+      "status": {
+        "enabled": false,
+        "notes": "Newsletter提取需要自定义解析器"
+      }
+    }
+  ],
+
+  "global_settings": {
+    "default_rate_limit": {
+      "requests_per_minute": 10,
+      "burst_size": 5
+    },
+    "default_cache": {
+      "enabled": true,
+      "ttl_minutes": 60,
+      "strategy": "memory"
+    },
+    "default_monitoring": {
+      "log_level": "INFO",
+      "alert_on_failure": true,
+      "metrics": {
+        "collect_count": true,
+        "collect_duration": true,
+        "error_rate": true
+      }
+    },
+    "timeout": {
+      "connect": 10,
+      "read": 30
+    },
+    "retry": {
+      "max_attempts": 3,
+      "backoff_factor": 2
+    }
+  },
+
+  "categories": {
+    "academic": {
+      "max_items_per_day": 20,
+      "min_score": 0.6
+    },
+    "lab_blog": {
+      "max_items_per_day": 15,
+      "min_score": 0.5
+    },
+    "media": {
+      "max_items_per_day": 30,
+      "min_score": 0.4
+    },
+    "tools": {
+      "max_items_per_day": 25,
+      "min_score": 0.3
+    },
+    "community": {
+      "max_items_per_day": 10,
+      "min_score": 0.7
+    },
+    "newsletter": {
+      "max_items_per_day": 5,
+      "min_score": 0.5
+    }
+  }
+}

@@ -24,20 +24,23 @@ class TimeFilter:
     1. 每日输出固定数量（默认 10 条）
     2. 一年内信息占比达到目标比例（默认 80%）
     3. 当年信息不足时可降低比例至最低阈值（默认 70%）
+    4. 优先从未发送的历史文章中选择补充
     """
 
     # 时间分组定义
     GROUP_RECENT = "recent"  # 一年内（近期）
     GROUP_HISTORICAL = "historical"  # 一年外（历史）
 
-    def __init__(self, config: Optional[Config] = None):
+    def __init__(self, config: Optional[Config] = None, storage=None):
         """
         初始化时间过滤器
 
         Args:
             config: 配置对象
+            storage: 存储对象，用于获取未发送的历史文章
         """
         self.config = config
+        self.storage = storage
 
         # 从配置读取阈值
         self.recent_threshold_days = 365  # 默认一年内
@@ -70,6 +73,10 @@ class TimeFilter:
         # 将时间部分设为 23:59:59，确保包含当天发布的所有内容
         cutoff = cutoff.replace(hour=23, minute=59, second=59, microsecond=999999)
 
+        # 确保返回 timezone-naive datetime，避免与发布时间比较时出现错误
+        if cutoff.tzinfo is not None:
+            cutoff = cutoff.replace(tzinfo=None)
+
         return cutoff
 
     def get_today(self) -> datetime:
@@ -80,7 +87,13 @@ class TimeFilter:
             今天的结束时间
         """
         now = datetime.now()
-        return now.replace(hour=23, minute=59, second=59, microsecond=999999)
+        today_end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        # 确保返回 timezone-naive datetime
+        if today_end.tzinfo is not None:
+            today_end = today_end.replace(tzinfo=None)
+
+        return today_end
 
     def classify(self, articles: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         """
@@ -136,6 +149,7 @@ class TimeFilter:
         2. 优先使用一年内信息（目标 80%）
         3. 当年信息不足时，可降低比例至最低阈值（70%）
         4. 用一年外信息补充至目标数量
+        5. 优先使用数据库中未发送的历史文章进行补充
 
         Args:
             articles: 资讯列表
@@ -204,6 +218,23 @@ class TimeFilter:
 
             result = selected_recent + selected_historical
             logger.warning(f"TimeFilter: 近期文章严重不足 ({len(selected_recent)}/{self.daily_target_count})，使用所有近期 + 历史补充")
+
+        # 如果仍然不足，从数据库获取未发送的历史文章补充
+        if len(result) < self.daily_target_count and self.storage:
+            logger.info(f"TimeFilter: 当前文章不足 {len(result)} 条，从数据库获取未发送的历史文章补充")
+            unsent_articles = self.storage.get_unsent(limit=self.daily_target_count - len(result))
+
+            # 将数据库文章转换为字典格式并添加到结果中
+            for article in unsent_articles:
+                article_dict = article.to_dict()
+                # 确保字典包含必要的字段
+                article_dict.setdefault('description', '')
+                article_dict.setdefault('score', article.score or 0)
+                article_dict.setdefault('published_at', article.published_at)
+                article_dict.setdefault('_time_group', self.GROUP_HISTORICAL)
+                result.append(article_dict)
+
+            logger.info(f"TimeFilter: 从数据库补充了 {len(unsent_articles)} 条未发送的历史文章")
 
         # 最终保证输出数量
         result = result[:self.daily_target_count]

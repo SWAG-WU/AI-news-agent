@@ -47,7 +47,7 @@ class BaseCollector(ABC):
         self.source_config = None
         if source_id:
             for source in self.config.sources.sources:
-                if source.id == source_id:
+                if source._id == source_id:
                     self.source_config = source
                     break
 
@@ -70,7 +70,12 @@ class BaseCollector(ABC):
         """初始化HTTP会话"""
         if self.session is None or self.session.closed:
             timeout = aiohttp.ClientTimeout(total=self.config.thresholds.retry.timeout_seconds)
-            connector = aiohttp.TCPConnector(limit=10)
+            # 增加连接池限制以支持并发采集
+            connector = aiohttp.TCPConnector(
+                limit=100,               # 总连接数增加到100
+                limit_per_host=30,       # 每个主机的连接数增加到30
+                ttl_dns_cache=300        # DNS缓存5分钟
+            )
 
             # 代理配置
             proxy = None

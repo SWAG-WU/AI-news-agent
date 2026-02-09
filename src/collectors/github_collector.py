@@ -165,7 +165,7 @@ class GithubCollector(BaseCollector):
             "description": description,
             "published_at": datetime.now().isoformat(),  # GitHub没有明确的发布时间
             "source": "GitHub",
-            "category": "tech",
+            "category": "tools",
             "author": owner,
             "language": prog_language,
             "stars": stars,
@@ -244,7 +244,7 @@ class GithubReleaseCollector(BaseCollector):
         if self.config.github_token:
             self.headers["Authorization"] = f"token {self.config.github_token}"
 
-    async def collect(self, hours: int = 48) -> List[Dict[str, Any]]:
+    async def collect(self, hours: int = 168) -> List[Dict[str, Any]]:
         """采集GitHub Release"""
         logger.info("开始采集GitHub Release")
 
@@ -309,7 +309,7 @@ class GithubReleaseCollector(BaseCollector):
             "description": clean_body[:1000],
             "published_at": published,
             "source": "GitHub",
-            "category": "tech",
+            "category": "tools",
             "author": project.split("/")[0],
             "tags": ["release", "github", "update"],
             "score": 0,

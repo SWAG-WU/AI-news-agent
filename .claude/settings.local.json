@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(pip install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(findstr:*)",
+      "mcp__zai-mcp-server__diagnose_error_screenshot",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git remote set-url:*)",
+      "mcp__zread__get_repo_structure",
+      "Bash(sqlite3:*)",
+      "mcp__zai-mcp-server__extract_text_from_screenshot"
     ]
   }
 }

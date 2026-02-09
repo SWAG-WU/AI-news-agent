@@ -7,11 +7,14 @@
 """
 
 import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
+
+logger = logging.getLogger(__name__)
 
 
 # ==================== 数据源配置模型 ====================
@@ -36,16 +39,102 @@ class SourceConfig(BaseModel):
     news_url: Optional[str] = None
 
 
-class Source(BaseModel):
-    """数据源模型"""
+class SourceConfig(BaseModel):
+    """单个数据源配置"""
+    base_url: str
+    rss_url: Optional[str] = None
+    search_query: Optional[str] = None
+    max_results: Optional[int] = None
+    sort_by: Optional[str] = None
+    sort_order: Optional[str] = None
+    languages: Optional[List[str]] = None
+    spoken_language: Optional[str] = None
+    since: Optional[str] = None
+    topic: Optional[str] = None
+    news_url: Optional[str] = None
+
+
+class SourceMetadata(BaseModel):
+    """信息源元数据"""
     id: str
     name: str
-    type: str  # academic, blog, code, conference, media
-    priority: int
+    description: Optional[str] = None
+    version: str = "1.0.0"
+    homepage: Optional[str] = None
+    icon: Optional[str] = None
+    tags: List[str] = []
+
+
+class SourceCategorization(BaseModel):
+    """分类信息"""
+    category: str
+    type: str
+    priority: int = 5
+    language: str = "en"
+
+
+class SourceStatus(BaseModel):
+    """状态信息"""
     enabled: bool = True
-    config: SourceConfig
+    stable: bool = False
+    notes: Optional[str] = None
+
+
+class Source(BaseModel):
+    """数据源模型（兼容新旧格式）"""
+    # 新格式字段
+    metadata: Optional[SourceMetadata] = None
+    categorization: Optional[SourceCategorization] = None
+    collector: Optional[Dict[str, Any]] = None
+    status: Optional[SourceStatus] = None
+
+    # 旧格式字段（向后兼容）
+    id: Optional[str] = None
+    name: Optional[str] = None
+    type: Optional[str] = None
+    category: Optional[str] = None
+    priority: Optional[int] = None
+    enabled: Optional[bool] = None
+    config: Optional[SourceConfig] = None
     rate_limit: Optional[SourceRateLimit] = None
     note: Optional[str] = None
+
+    # 兼容性属性
+    @property
+    def _id(self) -> str:
+        if self.metadata:
+            return self.metadata.id
+        return self.id or ""
+
+    @property
+    def _name(self) -> str:
+        if self.metadata:
+            return self.metadata.name
+        return self.name or ""
+
+    @property
+    def _type(self) -> str:
+        if self.categorization:
+            return self.categorization.type
+        return self.type or "blog"
+
+    @property
+    def _category(self) -> str:
+        if self.categorization:
+            return self.categorization.category
+        return self.category or "media"
+
+    @property
+    def _priority(self) -> int:
+        if self.categorization:
+            return self.categorization.priority
+        return self.priority or 5
+
+    @property
+    def _enabled(self) -> bool:
+        if self.status:
+            return self.status.enabled
+        return self.enabled if self.enabled is not None else True
 
 
 class SourcesConfig(BaseModel):
@@ -55,21 +144,21 @@ class SourcesConfig(BaseModel):
 
     def get_enabled_sources(self) -> List[Source]:
         """获取已启用的数据源"""
-        return [s for s in self.sources if s.enabled]
+        return [s for s in self.sources if s._enabled]
 
     def get_sources_by_type(self, source_type: str) -> List[Source]:
         """按类型获取数据源"""
-        return [s for s in self.sources if s.type == source_type and s.enabled]
+        return [s for s in self.sources if s._type == source_type and s._enabled]
 
     def get_sources_by_priority(self, min_priority: Optional[int] = None,
                                 max_priority: Optional[int] = None) -> List[Source]:
         """按优先级范围获取数据源"""
         sources = self.get_enabled_sources()
         if min_priority is not None:
-            sources = [s for s in sources if s.priority >= min_priority]
+            sources = [s for s in sources if s._priority >= min_priority]
         if max_priority is not None:
-            sources = [s for s in sources if s.priority <= max_priority]
-        return sorted(sources, key=lambda x: x.priority)
+            sources = [s for s in sources if s._priority <= max_priority]
+        return sorted(sources, key=lambda x: x._priority)
 
 
 # ==================== 关键词配置模型 ====================
@@ -120,6 +209,46 @@ class KeywordsConfig(BaseModel):
             if keyword.lower() in text_lower:
                 return True
         return False
+
+
+# ==================== 分类配置模型 ====================
+
+class CategoryInfo(BaseModel):
+    """分类信息"""
+    name: str
+    name_en: str
+    description: str
+    icon: str
+    color: str
+    priority: int
+    keywords: List[str]
+
+
+class CategoriesConfig(BaseModel):
+    """分类配置集合"""
+    categories: Dict[str, CategoryInfo]
+    mapping: Dict[str, str]
+
+    def get_category(self, category_id: str) -> Optional[CategoryInfo]:
+        """获取分类信息"""
+        return self.categories.get(category_id)
+
+    def get_category_by_keywords(self, text: str) -> Optional[str]:
+        """根据文本内容获取分类"""
+        text_lower = text.lower()
+        for category_id, category_info in self.categories.items():
+            for keyword in category_info.keywords:
+                if keyword.lower() in text_lower:
+                    return category_id
+        return None
+
+    def map_source_to_category(self, source_name: str) -> Optional[str]:
+        """根据信息源名称映射到分类"""
+        source_name_lower = source_name.lower()
+        for key, category_id in self.mapping.items():
+            if key.lower() in source_name_lower:
+                return category_id
+        return None
 
 
 # ==================== 阈值配置模型 ====================
@@ -334,6 +463,14 @@ class Config:
         # 加载关键词配置
         keywords_data = self._load_json("keywords.json")
         self.keywords = KeywordsConfig(**keywords_data)
+
+        # 加载分类配置
+        try:
+            categories_data = self._load_json("categories.json")
+            self.categories = CategoriesConfig(**categories_data)
+        except FileNotFoundError:
+            logger.warning("分类配置文件不存在，使用默认分类")
+            self.categories = None
 
         # 加载阈值配置
         thresholds_data = self._load_json("thresholds.json")

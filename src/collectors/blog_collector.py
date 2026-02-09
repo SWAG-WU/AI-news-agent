@@ -29,12 +29,18 @@ class BlogCollector(MultiSourceCollector):
 
     async def _collect_from_source(self, source) -> List[Dict[str, Any]]:
         """从单个博客源采集"""
-        rss_url = source.config.rss_url
-        if not rss_url:
-            logger.warning(f"{source.name} 没有配置RSS URL")
+        # 兼容新旧配置格式
+        if source.collector and source.collector.get("rss_url"):
+            rss_url = source.collector.get("rss_url")
+            base_url = source.collector.get("base_url") or source.collector.get("base_url")
+        elif source.config:
+            rss_url = source.config.rss_url
+            base_url = source.config.base_url
+        else:
+            logger.warning(f"{source._name} 没有配置RSS URL")
             return []
 
-        logger.info(f"开始采集 {source.name} RSS")
+        logger.info(f"开始采集 {source._name} RSS")
 
         try:
             response_text = await self._fetch(rss_url)
@@ -50,14 +56,14 @@ class BlogCollector(MultiSourceCollector):
                     if article:
                         articles.append(article)
                 except Exception as e:
-                    logger.warning(f"解析 {source.name} 条目失败: {e}")
+                    logger.warning(f"解析 {source._name} 条目失败: {e}")
                     continue
 
-            logger.info(f"{source.name} 采集到 {len(articles)} 条资讯")
+            logger.info(f"{source._name} 采集到 {len(articles)} 条资讯")
             return articles
 
         except Exception as e:
-            logger.error(f"{source.name} 采集失败: {e}")
+            logger.error(f"{source._name} 采集失败: {e}")
             return []
 
     def _parse_entry(self, entry: Any, source) -> Optional[Dict[str, Any]]:
@@ -85,8 +91,17 @@ class BlogCollector(MultiSourceCollector):
         # 清理HTML标签（如果需要纯文本）
         clean_content = self._clean_html(full_content)
 
-        # 获取完整URL（有些RSS是相对路径）
-        url = urljoin(source.config.base_url, link) if source.config.base_url else link
+        # 获取完整URL（有些RSS是相对路径）- 兼容新旧格式
+        base_url = None
+        if source.collector and source.collector.get("base_url"):
+            base_url = source.collector.get("base_url")
+        elif source.config:
+            base_url = source.config.base_url
+
+        url = urljoin(base_url, link) if base_url else link
+
+        # 使用配置中的 category，如果不存在则使用 type 作为 fallback
+        article_category = source._category or self._map_category(source._type)
 
         return {
             "url": url,
@@ -94,7 +109,7 @@ class BlogCollector(MultiSourceCollector):
             "description": clean_content[:1000],
             "published_at": published,
             "source": source.name,
-            "category": self._map_category(source.type),
+            "category": article_category,
             "author": author,
             "tags": self._extract_tags(entry),
             "score": 0,
@@ -157,7 +172,7 @@ class HuggingFaceCollector(BaseCollector):
         super().__init__(config, source_id)
         self.base_url = "https://huggingface.co"
 
-    async def collect(self, hours: int = 48) -> List[Dict[str, Any]]:
+    async def collect(self, hours: int = 168) -> List[Dict[str, Any]]:
         """采集HuggingFace资讯"""
         all_articles = []
 
@@ -222,7 +237,7 @@ class HuggingFaceCollector(BaseCollector):
             "score": 0,
         }
 
-    async def _collect_trending_models(self, hours: int = 48) -> List[Dict[str, Any]]:
+    async def _collect_trending_models(self, hours: int = 168) -> List[Dict[str, Any]]:
         """采集HuggingFace热门模型"""
         # HuggingFace没有公开的trending API，这里简化处理
         # 实际需要爬取或使用第三方API

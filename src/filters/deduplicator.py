@@ -37,7 +37,7 @@ class Deduplicator:
 
     async def deduplicate(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        去除重复文章
+        去除重复文章（批量优化版）
 
         Args:
             articles: 原始文章列表
@@ -51,17 +51,42 @@ class Deduplicator:
 
         logger.info(f"开始去重，原始文章数: {len(articles)}")
 
+        # 批量预检查数据库中的重复内容
+        existing_urls = set()
+        existing_hashes = set()
+
+        if self.storage:
+            # 批量查询已存在的URL
+            urls = [a.get("url", "") for a in articles if a.get("url")]
+            existing_urls = await self._batch_check_urls(urls)
+
+            # 批量查询已存在的内容哈希
+            hashes = [self._compute_content_hash(a.get("title", ""), a.get("description", ""))
+                     for a in articles if a.get("title")]
+            existing_hashes = await self._batch_check_content_hashes(hashes)
+
+        # 过滤文章
         unique_articles = []
         duplicate_count = 0
 
         for article in articles:
             try:
-                # 检查是否重复
-                is_duplicate, duplicate_type = await self._is_duplicate(article)
+                url = article.get("url", "")
+                content_hash = self._compute_content_hash(article.get("title", ""), article.get("description", ""))
+
+                # 检查是否重复（先检查缓存，再检查预加载的数据库结果）
+                is_duplicate = False
+
+                # 检查当前批次缓存
+                if url in self._seen_urls or content_hash in self._seen_content_hashes:
+                    is_duplicate = True
+                # 检查数据库预加载结果
+                elif url in existing_urls or content_hash in existing_hashes:
+                    is_duplicate = True
 
                 if is_duplicate:
                     duplicate_count += 1
-                    logger.debug(f"发现重复文章 ({duplicate_type}): {article.get('title', '')}")
+                    logger.debug(f"发现重复文章: {article.get('title', '')}")
                 else:
                     # 标记为已见
                     self._mark_as_seen(article)
@@ -74,6 +99,43 @@ class Deduplicator:
 
         logger.info(f"去重完成: 移除 {duplicate_count} 篇重复文章，剩余 {len(unique_articles)} 篇")
         return unique_articles
+
+    async def _batch_check_urls(self, urls: List[str]) -> Set[str]:
+        """批量检查URL是否已存在"""
+        if not self.storage or not urls:
+            return set()
+
+        try:
+            # 导入 Article 模型
+            from src.storage import Article
+            session = self.storage.get_session()
+            url_hashes = [self.storage.compute_url_hash(url) for url in urls]
+            existing = session.query(Article.url_hash).filter(
+                Article.url_hash.in_(url_hashes)
+            ).all()
+            session.close()
+            return set(row.url_hash for row in existing)
+        except Exception as e:
+            logger.warning(f"批量查询URL失败: {e}")
+            return set()
+
+    async def _batch_check_content_hashes(self, hashes: List[str]) -> Set[str]:
+        """批量检查内容哈希是否已存在"""
+        if not self.storage or not hashes:
+            return set()
+
+        try:
+            # 导入 Article 模型
+            from src.storage import Article
+            session = self.storage.get_session()
+            existing = session.query(Article.content_hash).filter(
+                Article.content_hash.in_(hashes)
+            ).all()
+            session.close()
+            return set(row.content_hash for row in existing)
+        except Exception as e:
+            logger.warning(f"批量查询内容哈希失败: {e}")
+            return set()
 
     async def _is_duplicate(self, article: Dict[str, Any]) -> tuple[bool, str]:
         """

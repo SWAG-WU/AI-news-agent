@@ -61,8 +61,8 @@ class AINewsAgent:
             ThresholdFilter(self.config),
         ]
         self.deduplicator = Deduplicator(self.storage, self.config)
-        # 时间过滤器（用于确保近期资讯占比 > 80%）
-        self.time_filter = TimeFilter(self.config) if self.config.thresholds.time_filter.enabled else None
+        # 时间过滤器（用于确保近期资讯占比 > 80%），传入 storage 以获取未发送的历史文章
+        self.time_filter = TimeFilter(self.config, self.storage) if self.config.thresholds.time_filter.enabled else None
         # 测试模式使用模拟摘要生成器
         use_mock = self.config.is_test_mode()
         self.summarizer = create_summarizer(self.config, mock=use_mock)
@@ -107,7 +107,7 @@ class AINewsAgent:
             report = await self._format_report(summarized_news)
 
             # 7. 推送
-            await self._send_report(report)
+            await self._send_report(report, summarized_news)
 
             # 8. 保存历史
             await self._save_history(summarized_news)
@@ -121,21 +121,40 @@ class AINewsAgent:
             raise
 
     async def _collect_news(self) -> list:
-        """从各个数据源采集资讯"""
+        """从各个数据源采集资讯（并发执行）"""
         logger.info("Step 1: 采集资讯...")
-        all_news = []
+        import asyncio
 
+        # 创建并发任务
+        tasks = []
         for name, collector in self.collectors.items():
-            try:
-                async with collector:
-                    news = await collector.collect()
-                    all_news.extend(news)
-                    logger.info(f"  {name}: 采集到 {len(news)} 条资讯")
-            except Exception as e:
-                logger.error(f"  {name}: 采集失败 - {e}")
+            task = asyncio.create_task(self._collect_with_error_handling(name, collector))
+            tasks.append((name, task))
+
+        # 并发执行所有采集任务
+        results = await asyncio.gather(*[task for _, task in tasks], return_exceptions=True)
+
+        # 收集结果
+        all_news = []
+        for (name, _), result in zip(tasks, results):
+            if isinstance(result, Exception):
+                logger.error(f"  {name}: 采集失败 - {result}")
+            elif result is not None:
+                all_news.extend(result)
+                logger.info(f"  {name}: 采集到 {len(result)} 条资讯")
 
         logger.info(f"  总计采集到 {len(all_news)} 条资讯")
         return all_news
+
+    async def _collect_with_error_handling(self, name: str, collector) -> list:
+        """带错误处理的采集方法"""
+        try:
+            async with collector:
+                news = await collector.collect()
+                return news
+        except Exception as e:
+            logger.error(f"  {name}: 采集失败 - {e}")
+            return []
 
     async def _filter_news(self, news: list) -> list:
         """根据关键词和阈值过滤资讯"""
@@ -192,12 +211,18 @@ class AINewsAgent:
         logger.info(f"  日报预览:\n{preview}")
         return report
 
-    async def _send_report(self, report: str):
+    async def _send_report(self, report: str, news: list = None):
         """推送日报"""
         logger.info("Step 6: 推送日报...")
         result = await self.sender.send(report)
         if result.get("success"):
             logger.info("  推送成功")
+            # 标记文章为已发送
+            if news:
+                urls = [article.get("url", "") for article in news if article.get("url")]
+                if urls:
+                    count = self.storage.mark_sent_batch(urls)
+                    logger.info(f"  标记 {count} 条文章为已发送")
         else:
             logger.error(f"  推送失败: {result.get('error')}")
 

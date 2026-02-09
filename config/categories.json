@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AI资讯分类配置",
+  "description": "定义6种资讯分类及其对应的标签和优先级",
+
+  "categories": {
+    "academic": {
+      "name": "学术研究",
+      "name_en": "Academic Research",
+      "description": "论文发布、arXiv、学术会议、研究突破",
+      "icon": "🎓",
+      "color": "#6366f1",
+      "priority": 1,
+      "keywords": ["arxiv", "paper", "research", "conference", "neurips", "icml", "cvpr", "acl", "emnlp"]
+    },
+    "lab_blog": {
+      "name": "实验室博客",
+      "name_en": "Lab Blogs",
+      "description": "OpenAI、DeepMind、Anthropic等官方博客动态",
+      "icon": "🏢",
+      "color": "#8b5cf6",
+      "priority": 2,
+      "keywords": ["openai", "deepmind", "anthropic", "meta ai", "google", "microsoft", "blog"]
+    },
+    "media": {
+      "name": "专业媒体",
+      "name_en": "AI Media",
+      "description": "AI专业媒体报道和深度分析",
+      "icon": "📰",
+      "color": "#ec4899",
+      "priority": 3,
+      "keywords": ["technology review", "wired", "venturebeat", "synced", "ai media"]
+    },
+    "tools": {
+      "name": "工具产品",
+      "name_en": "Tools & Products",
+      "description": "AI工具、产品发布、平台更新",
+      "icon": "🛠️",
+      "color": "#14b8a6",
+      "priority": 4,
+      "keywords": ["product hunt", "tool", "app", "platform", "release", "launch", "beta"]
+    },
+    "community": {
+      "name": "社区讨论",
+      "name_en": "Community",
+      "description": "Hacker News、Reddit等社区热门讨论",
+      "icon": "💬",
+      "color": "#f59e0b",
+      "priority": 5,
+      "keywords": ["hacker news", "reddit", "discussion", "community", "hn"]
+    },
+    "newsletter": {
+      "name": "Newsletter",
+      "name_en": "Newsletter",
+      "description": "优质AI Newsletter摘要",
+      "icon": "📧",
+      "color": "#10b981",
+      "priority": 6,
+      "keywords": ["newsletter", "batch", "import ai", "ben's bites"]
+    }
+  },
+
+  "mapping": {
+    "arxiv": "academic",
+    "paperswithcode": "academic",
+    "huggingface papers": "academic",
+    "the gradient": "academic",
+    "neurips": "academic",
+    "icml": "academic",
+    "cvpr": "academic",
+    "acl": "academic",
+
+    "openai": "lab_blog",
+    "deepmind": "lab_blog",
+    "anthropic": "lab_blog",
+    "meta ai": "lab_blog",
+    "mistral": "lab_blog",
+    "xai": "lab_blog",
+    "通义": "lab_blog",
+    "智谱": "lab_blog",
+    "google": "lab_blog",
+    "microsoft": "lab_blog",
+
+    "synced": "media",
+    "technology review": "media",
+    "mit": "media",
+    "the decoder": "media",
+    "semafor": "media",
+    "wired": "media",
+    "venturebeat": "media",
+    "the verge": "media",
+    "nature": "media",
+    "机器之心": "media",
+
+    "product hunt": "tools",
+    "futurepedia": "tools",
+    "theresanai": "tools",
+    "huggingface spaces": "tools",
+
+    "hacker news": "community",
+    "reddit": "community",
+    "lilian weng": "community",
+    "li'log": "community",
+
+    "the batch": "newsletter",
+    "import ai": "newsletter",
+    "ben's bites": "newsletter",
+    "deeplearning.ai": "newsletter"
+  }
+}

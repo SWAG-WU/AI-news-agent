@@ -3,7 +3,7 @@
 """
 飞书格式化模块
 
-将资讯格式化为飞书机器人兼容的Markdown格式。
+将资讯格式化为飞书机器人兼容的Markdown格式，支持6种分类显示。
 """
 
 import logging
@@ -20,24 +20,40 @@ class FeishuFormatter:
     """
     飞书格式化器
 
-    将资讯列表格式化为飞书机器人兼容的Markdown日报。
+    将资讯列表格式化为飞书机器人兼容的Markdown日报，支持6种分类：
+    1. 学术研究 (academic)
+    2. 实验室博客 (lab_blog)
+    3. 专业媒体 (media)
+    4. 工具产品 (tools)
+    5. 社区讨论 (community)
+    6. Newsletter (newsletter)
     """
 
     def __init__(self, config: Optional[Config] = None):
         self.config = config or get_config()
         self.prompts_dir = Path("prompts")
 
-        # 分类映射
+        # 默认6种分类映射（如果配置文件不存在）
         self.category_map = {
-            "tech": "🧠 技术突破",
-            "industry": "🏢 行业动态",
-            "policy": "⚖️ 政策与伦理",
-            "opinion": "💡 专家观点",
-            "highlights": "🔥 今日亮点",
+            "academic": "🎓 学术研究",
+            "lab_blog": "🏢 实验室博客",
+            "media": "📰 专业媒体",
+            "tools": "🛠️ 工具产品",
+            "community": "💬 社区讨论",
+            "newsletter": "📧 Newsletter",
         }
+
+        # 加载自定义分类配置
+        self._load_category_config()
 
         # 加载提示词模板
         self._prompt_template = self._load_prompt_template()
+
+    def _load_category_config(self):
+        """加载分类配置"""
+        if self.config.categories:
+            for cat_id, cat_info in self.config.categories.categories.items():
+                self.category_map[cat_id] = f"{cat_info.icon} {cat_info.name}"
 
     def _load_prompt_template(self) -> str:
         """加载日报生成提示词模板"""
@@ -78,30 +94,31 @@ class FeishuFormatter:
         return report
 
     def _categorize_articles(self, articles: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
-        """将文章按分类整理，并按发布时间降序排序（最新的在前）"""
+        """
+        将文章按6种分类整理，并按发布时间降序排序（最新的在前）
+
+        分类优先级：
+        1. 如果文章已有 category 字段，使用该分类
+        2. 否则根据 source 字段映射到分类
+        3. 最后根据关键词内容推断分类
+        """
         categorized = {
-            "highlights": [],
-            "tech": [],
-            "industry": [],
-            "policy": [],
-            "opinion": [],
+            "academic": [],
+            "lab_blog": [],
+            "media": [],
+            "tools": [],
+            "community": [],
+            "newsletter": [],
         }
 
         for article in articles:
-            category = article.get("category", "tech")
+            category = self._determine_category(article)
 
-            # 高分文章放入亮点
-            score = article.get("score", 0)
-            high_threshold = self.config.thresholds.scoring.high_score_threshold
-
-            if score >= high_threshold and len(categorized["highlights"]) < 3:
-                categorized["highlights"].append(article)
+            if category in categorized:
+                categorized[category].append(article)
             else:
-                # 根据源分类
-                if category in categorized:
-                    categorized[category].append(article)
-                else:
-                    categorized["tech"].append(article)
+                # 默认归入学术研究
+                categorized["academic"].append(article)
 
         # 按发布时间降序排序（最新的在前），published_at 为空的排在最后
         for category_key in categorized:
@@ -112,35 +129,90 @@ class FeishuFormatter:
 
         return categorized
 
+    def _determine_category(self, article: Dict[str, Any]) -> str:
+        """
+        确定文章的分类
+
+        优先级：
+        1. 文章已有的 category 字段
+        2. 根据 source 字段映射
+        3. 根据关键词内容推断
+        """
+        # 1. 检查文章是否已有分类
+        if "category" in article and article["category"] in self.category_map:
+            return article["category"]
+
+        # 2. 根据 source 映射
+        source = article.get("source", "").lower()
+        if self.config.categories:
+            mapped = self.config.categories.map_source_to_category(source)
+            if mapped:
+                return mapped
+
+        # 3. 根据关键词内容推断
+        title = article.get("title", "").lower()
+        description = article.get("description", "").lower()
+        text = f"{title} {description}"
+
+        if self.config.categories:
+            inferred = self.config.categories.get_category_by_keywords(text)
+            if inferred:
+                return inferred
+
+        # 4. 默认分类推断
+        if any(kw in text for kw in ["arxiv", "paper", "research", "neurips", "icml"]):
+            return "academic"
+        elif any(kw in text for kw in ["openai", "deepmind", "anthropic", "google", "meta", "blog"]):
+            return "lab_blog"
+        elif any(kw in text for kw in ["product hunt", "tool", "app", "platform", "release"]):
+            return "tools"
+        elif any(kw in text for kw in ["hacker news", "reddit", "discussion"]):
+            return "community"
+        elif any(kw in text for kw in ["newsletter", "batch", "import ai"]):
+            return "newsletter"
+        else:
+            return "media"
+
     def _generate_report(self, categorized: Dict[str, List[Dict[str, Any]]]) -> str:
         """生成日报文本"""
         lines = []
 
         # 标题
         date_str = datetime.now().strftime("%Y年%m月%d日")
-        lines.append(f"【AI前沿日报｜{date_str}】")
+        lines.append(f"# 【AI前沿日报｜{date_str}】")
         lines.append("")
 
-        # 生成各分类内容
-        for category_key, category_label in self.category_map.items():
+        # 统计信息
+        total_count = sum(len(articles) for articles in categorized.values())
+        lines.append(f"📊 今日共收录 {total_count} 条资讯")
+        lines.append("")
+
+        # 按分类优先级顺序生成内容
+        category_order = ["academic", "lab_blog", "media", "tools", "community", "newsletter"]
+
+        for category_key in category_order:
             articles = categorized.get(category_key, [])
 
             if not articles:
                 continue  # 空分类不显示
+
+            category_label = self.category_map.get(category_key, category_key)
 
             # 检查是否超过最大数量
             max_items = self.config.thresholds.daily_output.max_items_per_category.get(
                 category_key, 10
             )
 
-            lines.append(f"{category_label}")
+            lines.append(f"## {category_label}")
+            lines.append("")
 
             for article in articles[:max_items]:
                 lines.append(self._format_article(article, category_key))
                 lines.append("")
 
         # 页脚
-        lines.append(f"✅ 数据截至 {date_str} | 来源：arXiv / 官方博客 / 顶会等")
+        lines.append("---")
+        lines.append(f"✅ 数据截至 {date_str} | 来源：arXiv / 官方博客 / 专业媒体 / 社区等")
 
         return "\n".join(lines)
 
@@ -158,16 +230,18 @@ class FeishuFormatter:
         formatted_time = self._format_published_time(published_at)
 
         # 根据分类使用不同格式
-        if category == "highlights":
-            return self._format_highlight(title, summary, formatted_time)
-        elif category == "tech":
-            return self._format_tech_article(title, summary, author, institution, url, formatted_time)
-        elif category == "industry":
-            return self._format_industry_article(title, summary, source, url, formatted_time)
-        elif category == "policy":
-            return self._format_policy_article(title, summary, url, formatted_time)
-        elif category == "opinion":
-            return self._format_opinion_article(title, summary, author, url, formatted_time)
+        if category == "academic":
+            return self._format_academic_article(title, summary, author, institution, url, formatted_time)
+        elif category == "lab_blog":
+            return self._format_lab_blog_article(title, summary, source, url, formatted_time)
+        elif category == "media":
+            return self._format_media_article(title, summary, source, url, formatted_time)
+        elif category == "tools":
+            return self._format_tools_article(title, summary, url, formatted_time)
+        elif category == "community":
+            return self._format_community_article(title, summary, source, url, formatted_time)
+        elif category == "newsletter":
+            return self._format_newsletter_article(title, summary, source, url, formatted_time)
         else:
             return self._format_default_article(title, summary, url, formatted_time)
 
@@ -192,83 +266,155 @@ class FeishuFormatter:
         except Exception:
             return published_at
 
-    def _format_highlight(self, title: str, summary: str, formatted_time: str = "") -> str:
-        """格式化亮点文章"""
+    def _format_academic_article(self, title: str, summary: str,
+                                author: str, institution: str, url: str,
+                                formatted_time: str = "") -> str:
+        """格式化学术研究文章"""
         lines = []
-        lines.append(f"• {title}")
-        if formatted_time:
-            lines.append(f"🕒 {formatted_time}")
-        lines.append(f"{summary[:150]}")  # 限制长度
-        return "\n".join(lines)
+        lines.append(f"### {title}")
 
-    def _format_tech_article(self, title: str, summary: str,
-                            author: str, institution: str, url: str,
-                            formatted_time: str = "") -> str:
-        """格式化技术突破文章"""
-        lines = []
-        lines.append(f"• {title}")
-
-        # 添加机构信息
+        # 添加作者/机构信息
+        meta_info = []
+        if author:
+            meta_info.append(f"作者: {author}")
         if institution:
-            lines.append(f"（{institution}）")
-        elif author:
-            lines.append(f"（{author}）")
-
+            meta_info.append(f"机构: {institution}")
         if formatted_time:
-            lines.append(f"🕒 {formatted_time}")
-        lines.append(f"{summary[:200]}")
+            meta_info.append(f"🕒 {formatted_time}")
+
+        if meta_info:
+            lines.append("*" + " | ".join(meta_info) + "*")
+
+        lines.append("")
+        lines.append(summary[:300])
         if url:
-            lines.append(f"[链接]({url})")
+            lines.append(f"[查看论文]({url})")
 
         return "\n".join(lines)
 
-    def _format_industry_article(self, title: str, summary: str,
+    def _format_lab_blog_article(self, title: str, summary: str,
                                  source: str, url: str,
                                  formatted_time: str = "") -> str:
-        """格式化行业动态文章"""
+        """格式化实验室博客文章"""
         lines = []
-        lines.append(f"• {source}：{title}")
+        lines.append(f"### {title}")
+
+        meta_info = []
+        if source:
+            meta_info.append(f"来源: {source}")
         if formatted_time:
-            lines.append(f"🕒 {formatted_time}")
-        lines.append(f"{summary[:150]}")
+            meta_info.append(f"🕒 {formatted_time}")
+
+        if meta_info:
+            lines.append("*" + " | ".join(meta_info) + "*")
+
+        lines.append("")
+        lines.append(summary[:300])
         if url:
-            lines.append(f"[链接]({url})")
+            lines.append(f"[阅读原文]({url})")
+
         return "\n".join(lines)
 
-    def _format_policy_article(self, title: str, summary: str, url: str,
-                              formatted_time: str = "") -> str:
-        """格式化政策伦理文章"""
+    def _format_media_article(self, title: str, summary: str,
+                             source: str, url: str,
+                             formatted_time: str = "") -> str:
+        """格式化专业媒体文章"""
         lines = []
-        lines.append(f"• {title}")
+        lines.append(f"### {title}")
+
+        meta_info = []
+        if source:
+            meta_info.append(f"{source}")
         if formatted_time:
-            lines.append(f"🕒 {formatted_time}")
-        lines.append(f"{summary[:150]}")
+            meta_info.append(f"🕒 {formatted_time}")
+
+        if meta_info:
+            lines.append("*" + " | ".join(meta_info) + "*")
+
+        lines.append("")
+        lines.append(summary[:300])
         if url:
-            lines.append(f"[链接]({url})")
+            lines.append(f"[阅读全文]({url})")
+
         return "\n".join(lines)
 
-    def _format_opinion_article(self, title: str, summary: str,
-                                author: str, url: str,
-                                formatted_time: str = "") -> str:
-        """格式化专家观点文章"""
+    def _format_tools_article(self, title: str, summary: str,
+                             url: str,
+                             formatted_time: str = "") -> str:
+        """格式化工具产品文章"""
         lines = []
-        lines.append(f"• {author}：「{title}」")
+        lines.append(f"### {title}")
+
         if formatted_time:
-            lines.append(f"🕒 {formatted_time}")
+            lines.append(f"*🕒 {formatted_time}*")
+
+        lines.append("")
+        lines.append(summary[:300])
         if url:
-            lines.append(f"[出处]({url})")
+            lines.append(f"[查看产品]({url})")
+
+        return "\n".join(lines)
+
+    def _format_community_article(self, title: str, summary: str,
+                                  source: str, url: str,
+                                  formatted_time: str = "") -> str:
+        """格式化社区讨论文章"""
+        lines = []
+        lines.append(f"### {title}")
+
+        meta_info = []
+        if source:
+            meta_info.append(f"来源: {source}")
+        if formatted_time:
+            meta_info.append(f"🕒 {formatted_time}")
+
+        if meta_info:
+            lines.append("*" + " | ".join(meta_info) + "*")
+
+        lines.append("")
+        lines.append(summary[:300])
+        if url:
+            lines.append(f"[参与讨论]({url})")
+
+        return "\n".join(lines)
+
+    def _format_newsletter_article(self, title: str, summary: str,
+                                   source: str, url: str,
+                                   formatted_time: str = "") -> str:
+        """格式化Newsletter文章"""
+        lines = []
+        lines.append(f"### {title}")
+
+        meta_info = []
+        if source:
+            meta_info.append(f"来源: {source}")
+        if formatted_time:
+            meta_info.append(f"🕒 {formatted_time}")
+
+        if meta_info:
+            lines.append("*" + " | ".join(meta_info) + "*")
+
+        lines.append("")
+        lines.append(summary[:300])
+        if url:
+            lines.append(f"[阅读原文]({url})")
+
         return "\n".join(lines)
 
     def _format_default_article(self, title: str, summary: str, url: str,
                                formatted_time: str = "") -> str:
         """默认格式"""
         lines = []
-        lines.append(f"• {title}")
+        lines.append(f"### {title}")
+
         if formatted_time:
-            lines.append(f"🕒 {formatted_time}")
-        lines.append(f"{summary[:150]}")
+            lines.append(f"*🕒 {formatted_time}*")
+
+        lines.append("")
+        lines.append(summary[:300])
         if url:
-            lines.append(f"[链接]({url})")
+            lines.append(f"[查看详情]({url})")
+
         return "\n".join(lines)
 
     def _format_fallback(self, articles: List[Dict[str, Any]]) -> str:
@@ -276,7 +422,7 @@ class FeishuFormatter:
         date_str = datetime.now().strftime("%Y年%m月%d日")
 
         lines = []
-        lines.append(f"【AI前沿日报｜{date_str}】")
+        lines.append(f"# 【AI前沿日报｜{date_str}】")
         lines.append("")
 
         if not articles:
@@ -288,13 +434,13 @@ class FeishuFormatter:
             lines.append("")
 
             for article in articles:
-                lines.append(f"• {article.get('title', '')}")
+                lines.append(f"## {article.get('title', '')}")
                 summary = article.get("summary", article.get("description", ""))
                 if summary:
-                    lines.append(f"  {summary[:100]}")
+                    lines.append(summary[:200])
                 lines.append("")
 
-        lines.append("")
+        lines.append("---")
         lines.append(f"✅ 数据截至 {date_str} | 来源：arXiv / 官方博客 / 顶会等")
 
         return "\n".join(lines)

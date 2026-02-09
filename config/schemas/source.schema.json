@@ -1,0 +1,506 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ai-news-agent.example/schemas/source.schema.json",
+  "title": "AI News Source Configuration",
+  "description": "统一的信息源配置格式，支持RSS、API、爬虫等多种采集方式",
+
+  "definitions": {
+    "Metadata": {
+      "type": "object",
+      "description": "信息源元数据",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "唯一标识符，使用 snake_case",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "examples": ["openai_blog", "arxiv_cs_ai", "hacker_news"]
+        },
+        "name": {
+          "type": "string",
+          "description": "信息源显示名称",
+          "examples": ["OpenAI Blog", "arXiv CS.AI", "Hacker News"]
+        },
+        "description": {
+          "type": "string",
+          "description": "信息源描述",
+          "examples": ["OpenAI官方博客，发布GPT、Agent等最新研究"]
+        },
+        "version": {
+          "type": "string",
+          "description": "配置版本",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "default": "1.0.0"
+        },
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "标签",
+          "examples": [["official", "high-priority"], ["community", "discussion"]]
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "信息源官网"
+        },
+        "icon": {
+          "type": "string",
+          "description": "图标emoji或图标URL",
+          "examples": ["🏢", "https://example.com/icon.png"]
+        }
+      },
+      "required": ["id", "name"]
+    },
+
+    "Categorization": {
+      "type": "object",
+      "description": "分类信息",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": ["academic", "lab_blog", "media", "tools", "community", "newsletter"],
+          "description": "6大分类之一"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["rss", "api", "scraper", "newsletter", "social"],
+          "description": "采集方式类型"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 5,
+          "description": "优先级，1-10，数字越小优先级越高"
+        },
+        "language": {
+          "type": "string",
+          "enum": ["zh", "en", "ja", "ko", "mixed"],
+          "default": "en",
+          "description": "内容语言"
+        }
+      },
+      "required": ["category", "type"]
+    },
+
+    "CollectorConfig": {
+      "type": "object",
+      "description": "采集器配置",
+      "oneOf": [
+        {"$ref": "#/definitions/RSSCollector"},
+        {"$ref": "#/definitions/APICollector"},
+        {"$ref": "#/definitions/ScraperCollector"},
+        {"$ref": "#/definitions/NewsletterCollector"}
+      ]
+    },
+
+    "RSSCollector": {
+      "type": "object",
+      "properties": {
+        "type": {"const": "rss"},
+        "rss_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "RSS feed URL"
+        },
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "用于解析相对路径的基础URL"
+        },
+        "update_frequency": {
+          "type": "string",
+          "enum": ["realtime", "hourly", "daily", "weekly"],
+          "default": "daily",
+          "description": "更新频率"
+        },
+        "item_limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 50,
+          "description": "单次采集最大条数"
+        }
+      },
+      "required": ["rss_url"]
+    },
+
+    "APICollector": {
+      "type": "object",
+      "properties": {
+        "type": {"const": "api"},
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "API基础URL"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "API端点路径",
+          "examples": ["/v0/newstories", "/api/query"]
+        },
+        "method": {
+          "type": "string",
+          "enum": ["GET", "POST"],
+          "default": "GET"
+        },
+        "headers": {
+          "type": "object",
+          "description": "HTTP请求头"
+        },
+        "params": {
+          "type": "object",
+          "description": "查询参数",
+          "additionalProperties": true
+        },
+        "body": {
+          "type": "object",
+          "description": "POST请求体"
+        },
+        "response_format": {
+          "type": "string",
+          "enum": ["json", "xml", "html", "text"],
+          "default": "json"
+        },
+        "data_path": {
+          "type": "string",
+          "description": "JSON数据路径，如 'data.items'",
+          "examples": ["data.items", "feed.entries", "results"]
+        },
+        "pagination": {
+          "type": "object",
+          "description": "分页配置",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["offset", "cursor", "page"]
+            },
+            "limit": {"type": "integer"},
+            "max_pages": {"type": "integer"}
+          }
+        }
+      },
+      "required": ["base_url", "endpoint"]
+    },
+
+    "ScraperCollector": {
+      "type": "object",
+      "properties": {
+        "type": {"const": "scraper"},
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "要抓取的URL"
+        },
+        "base_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "基础URL"
+        },
+        "selectors": {
+          "type": "object",
+          "description": "CSS选择器配置",
+          "properties": {
+            "container": {
+              "type": "string",
+              "description": "条目容器选择器",
+              "examples": [".article", "div.post", "tr[data-post]"]
+            },
+            "title": {"type": "string", "examples": [".title", "h2", ".headline"]},
+            "url": {"type": "string", "examples": ["a.link", ".permalink"]},
+            "description": {"type": "string", "examples": [".summary", ".excerpt"]},
+            "author": {"type": "string", "examples": [".author", ".byline"]},
+            "published_at": {"type": "string", "examples": [".date", "time[datetime]"]},
+            "score": {"type": "string", "examples": [".score", ".points"]}
+          }
+        },
+        "list_pages": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "要抓取的列表页URL列表"
+        },
+        "render_js": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否需要渲染JavaScript"
+        },
+        "wait_for_selector": {
+          "type": "string",
+          "description": "等待加载的选择器"
+        }
+      },
+      "required": ["url", "selectors"]
+    },
+
+    "NewsletterCollector": {
+      "type": "object",
+      "properties": {
+        "type": {"const": "newsletter"},
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Newsletter网页版URL"
+        },
+        "archive_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "存档页面URL"
+        },
+        "extractor": {
+          "type": "string",
+          "enum": ["rss", "html", "custom"],
+          "description": "提取方式"
+        },
+        "rss_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "如果有RSS"
+        }
+      },
+      "required": ["url"]
+    },
+
+    "Authentication": {
+      "type": "object",
+      "description": "认证配置",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["none", "api_key", "bearer", "oauth2", "basic"],
+          "default": "none"
+        },
+        "api_key": {
+          "type": "string",
+          "description": "API密钥（支持环境变量引用，如 ${ENV_NAME}）"
+        },
+        "api_key_header": {
+          "type": "string",
+          "default": "X-API-Key",
+          "description": "API密钥请求头名称"
+        },
+        "bearer_token": {
+          "type": "string",
+          "description": "Bearer token（支持环境变量）"
+        },
+        "username": {"type": "string"},
+        "password": {"type": "string"},
+        "oauth2": {
+          "type": "object",
+          "properties": {
+            "client_id": {"type": "string"},
+            "client_secret": {"type": "string"},
+            "token_url": {"type": "string", "format": "uri"},
+            "scopes": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    },
+
+    "RateLimit": {
+      "type": "object",
+      "description": "限流配置",
+      "properties": {
+        "requests_per_minute": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10,
+          "description": "每分钟最大请求数"
+        },
+        "requests_per_hour": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "每小时最大请求数"
+        },
+        "burst_size": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 5,
+          "description": "突发请求大小"
+        },
+        "retry_after": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 60,
+          "description": "限流后重试等待时间（秒）"
+        }
+      }
+    },
+
+    "FilterRules": {
+      "type": "object",
+      "description": "过滤规则",
+      "properties": {
+        "include_keywords": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "包含关键词（任一匹配即通过）"
+        },
+        "exclude_keywords": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "排除关键词（任一匹配即过滤）"
+        },
+        "min_score": {
+          "type": "number",
+          "description": "最低评分"
+        },
+        "time_range": {
+          "type": "object",
+          "properties": {
+            "max_age_hours": {"type": "integer"},
+            "min_date": {"type": "string", "format": "date"}
+          }
+        },
+        "domains": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "允许的域名列表"
+        }
+      }
+    },
+
+    "ExtractionRules": {
+      "type": "object",
+      "description": "提取规则",
+      "properties": {
+        "title_selector": {"type": "string"},
+        "content_selector": {"type": "string"},
+        "author_selector": {"type": "string"},
+        "date_selector": {"type": "string"},
+        "date_format": {
+          "type": "string",
+          "description": "日期解析格式"
+        },
+        "cleanup_html": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否清理HTML"
+        },
+        "truncate_length": {
+          "type": "integer",
+          "description": "内容截断长度"
+        }
+      }
+    },
+
+    "CacheConfig": {
+      "type": "object",
+      "description": "缓存配置",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "ttl_minutes": {
+          "type": "integer",
+          "default": 60,
+          "description": "缓存过期时间（分钟）"
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["memory", "redis", "file"],
+          "default": "memory"
+        }
+      }
+    },
+
+    "Status": {
+      "type": "object",
+      "description": "状态管理",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否启用此信息源"
+        },
+        "stable": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否为稳定信息源（经过测试验证）"
+        },
+        "last_tested": {
+          "type": "string",
+          "format": "date-time",
+          "description": "最后测试时间"
+        },
+        "health_check_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "健康检查URL"
+        },
+        "notes": {
+          "type": "string",
+          "description": "备注说明"
+        }
+      }
+    },
+
+    "Monitoring": {
+      "type": "object",
+      "description": "监控配置",
+      "properties": {
+        "log_level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR"],
+          "default": "INFO"
+        },
+        "alert_on_failure": {
+          "type": "boolean",
+          "default": false
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "collect_count": {"type": "boolean", "default": true},
+            "collect_duration": {"type": "boolean", "default": true},
+            "error_rate": {"type": "boolean", "default": true}
+          }
+        }
+      }
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "metadata": {"$ref": "#/definitions/Metadata"},
+    "categorization": {"$ref": "#/definitions/Categorization"},
+    "collector": {"$ref": "#/definitions/CollectorConfig"},
+    "authentication": {"$ref": "#/definitions/Authentication"},
+    "rate_limit": {"$ref": "#/definitions/RateLimit"},
+    "filters": {"$ref": "#/definitions/FilterRules"},
+    "extraction": {"$ref": "#/definitions/ExtractionRules"},
+    "cache": {"$ref": "#/definitions/CacheConfig"},
+    "status": {"$ref": "#/definitions/Status"},
+    "monitoring": {"$ref": "#/definitions/Monitoring"}
+  },
+  "required": ["metadata", "categorization", "collector"],
+
+  "examples": [
+    {
+      "metadata": {
+        "id": "openai_blog",
+        "name": "OpenAI Blog",
+        "description": "OpenAI官方博客",
+        "homepage": "https://openai.com/blog",
+        "icon": "🏢",
+        "tags": ["official", "high-priority"]
+      },
+      "categorization": {
+        "category": "lab_blog",
+        "type": "rss",
+        "priority": 1,
+        "language": "en"
+      },
+      "collector": {
+        "type": "rss",
+        "rss_url": "https://openai.com/blog/rss.xml",
+        "base_url": "https://openai.com",
+        "update_frequency": "daily",
+        "item_limit": 20
+      },
+      "status": {
+        "enabled": true,
+        "stable": true
+      }
+    }
+  ]
+}

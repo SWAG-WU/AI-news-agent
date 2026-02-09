@@ -37,7 +37,7 @@ class ArxivCollector(BaseCollector):
         super().__init__(config, source_id)
         self.base_url = "http://export.arxiv.org/api/query"
 
-    async def collect(self, hours: int = 48, max_results: int = 100) -> List[Dict[str, Any]]:
+    async def collect(self, hours: int = 168, max_results: int = 100) -> List[Dict[str, Any]]:
         """
         采集arXiv论文
 
@@ -138,7 +138,7 @@ class ArxivCollector(BaseCollector):
             "description": description[:1000],  # 限制长度
             "published_at": published,
             "source": "arXiv",
-            "category": "tech",
+            "category": "academic",
             "author": primary_author,
             "authors": authors,
             "institution": institution,
