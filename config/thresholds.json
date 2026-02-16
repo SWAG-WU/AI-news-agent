@@ -45,15 +45,6 @@
     "fallback_window_days": 7
   },
 
-  "time_filter": {
-    "description": "时间分类和过滤配置",
-    "enabled": true,
-    "recent_threshold_days": 365,
-    "daily_target_count": 10,
-    "target_recent_ratio": 0.8,
-    "min_recent_ratio": 0.7
-  },
-
   "daily_output": {
     "max_items_per_category": {
       "highlights": 3,

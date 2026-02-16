@@ -290,16 +290,6 @@ class TimeThresholds(BaseModel):
     fallback_window_days: int = 7
 
 
-class TimeFilterConfig(BaseModel):
-    """时间过滤器配置"""
-    description: str = "时间分类和过滤配置"
-    enabled: bool = True
-    recent_threshold_days: int = 365
-    daily_target_count: int = 10
-    target_recent_ratio: float = 0.8
-    min_recent_ratio: float = 0.7
-
-
 class CategoryFilterConfig(BaseModel):
     """类别过滤器配置"""
     description: str = "按类型分类和过滤配置"
@@ -345,7 +335,6 @@ class ThresholdsConfig(BaseModel):
     huggingface: HuggingFaceThresholds
     content: ContentThresholds
     time: TimeThresholds
-    time_filter: TimeFilterConfig = Field(default_factory=TimeFilterConfig)
     category_filter: CategoryFilterConfig = Field(default_factory=CategoryFilterConfig)
     daily_output: DailyOutputThresholds
     scoring: ScoringThresholds
