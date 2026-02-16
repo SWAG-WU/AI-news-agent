@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/source.schema.json",
   "title": "AI资讯信息源配置",
-  "description": "统一格式配置 - 由迁移工具自动生成",
+  "description": "精简有效源 - 移除过期的RSS源",
   "sources": [
     {
       "metadata": {
@@ -11,9 +11,7 @@
         "version": "1.0.0",
         "homepage": "http://export.arxiv.org/api/query",
         "icon": "🎓",
-        "tags": [
-          "academic"
-        ]
+        "tags": ["academic"]
       },
       "categorization": {
         "category": "academic",
@@ -49,7 +47,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "arXiv API source"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -64,9 +62,7 @@
         "version": "1.0.0",
         "homepage": "https://paperswithcode.com",
         "icon": "🎓",
-        "tags": [
-          "academic"
-        ]
+        "tags": ["academic"]
       },
       "categorization": {
         "category": "academic",
@@ -95,60 +91,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "huggingface_papers",
-        "name": "Hugging Face Papers",
-        "description": "Hugging Face Papers - academic",
-        "version": "1.0.0",
-        "homepage": "https://huggingface.co",
-        "icon": "🎓",
-        "tags": [
-          "academic"
-        ]
-      },
-      "categorization": {
-        "category": "academic",
-        "type": "scraper",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "scraper",
-        "url": "https://huggingface.co",
-        "base_url": "https://huggingface.co",
-        "selectors": {
-          "container": ".item, article, .post",
-          "title": ".title, h1, h2, h3",
-          "url": "a[href]",
-          "description": ".description, .excerpt, .summary",
-          "author": ".author, .byline",
-          "published_at": "time, .date, [datetime]"
-        },
-        "render_js": false
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "Papers With Code RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -163,9 +106,7 @@
         "version": "1.0.0",
         "homepage": "https://thegradient.pub",
         "icon": "🎓",
-        "tags": [
-          "academic"
-        ]
+        "tags": ["academic"]
       },
       "categorization": {
         "category": "academic",
@@ -194,7 +135,51 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "The Gradient RSS"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+    {
+      "metadata": {
+        "id": "nature_ai",
+        "name": "Nature AI",
+        "description": "Nature AI - academic",
+        "version": "1.0.0",
+        "homepage": "https://www.nature.com",
+        "icon": "🎓",
+        "tags": ["academic"]
+      },
+      "categorization": {
+        "category": "academic",
+        "type": "rss",
+        "priority": 3,
+        "language": "en"
+      },
+      "collector": {
+        "type": "rss",
+        "rss_url": "https://www.nature.com/nmachintelligence/rss.xml",
+        "base_url": "https://www.nature.com",
+        "update_frequency": "daily",
+        "item_limit": 50
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {},
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
+        "enabled": true,
+        "stable": true,
+        "notes": "Nature Machine Intelligence RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -209,9 +194,7 @@
         "version": "1.0.0",
         "homepage": "https://openai.com",
         "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
+        "tags": ["blog"]
       },
       "categorization": {
         "category": "lab_blog",
@@ -240,7 +223,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "OpenAI Blog RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -249,153 +232,13 @@
     },
     {
       "metadata": {
-        "id": "google_deepmind",
-        "name": "Google DeepMind Blog",
-        "description": "Google DeepMind Blog - lab_blog",
+        "id": "huggingface_blog",
+        "name": "HuggingFace Blog",
+        "description": "HuggingFace Blog - lab_blog",
         "version": "1.0.0",
-        "homepage": "https://deepmind.google",
+        "homepage": "https://huggingface.co",
         "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
-      },
-      "categorization": {
-        "category": "lab_blog",
-        "type": "rss",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://deepmind.google/discover/blog/feed.xml",
-        "base_url": "https://deepmind.google",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "meta_ai_blog",
-        "name": "Meta AI Blog",
-        "description": "Meta AI Blog - lab_blog",
-        "version": "1.0.0",
-        "homepage": "https://ai.meta.com/blog",
-        "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
-      },
-      "categorization": {
-        "category": "lab_blog",
-        "type": "rss",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://ai.meta.com/blog/feed/",
-        "base_url": "https://ai.meta.com/blog",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "anthropic_blog",
-        "name": "Anthropic Blog",
-        "description": "Anthropic Blog - lab_blog",
-        "version": "1.0.0",
-        "homepage": "https://www.anthropic.com",
-        "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
-      },
-      "categorization": {
-        "category": "lab_blog",
-        "type": "rss",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://www.anthropic.com/news/rss",
-        "base_url": "https://www.anthropic.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "mistral_ai",
-        "name": "Mistral AI",
-        "description": "Mistral AI - lab_blog",
-        "version": "1.0.0",
-        "homepage": "https://mistral.ai",
-        "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
+        "tags": ["blog"]
       },
       "categorization": {
         "category": "lab_blog",
@@ -405,8 +248,8 @@
       },
       "collector": {
         "type": "rss",
-        "rss_url": "https://mistral.ai/news/rss/",
-        "base_url": "https://mistral.ai",
+        "rss_url": "https://huggingface.co/blog/feed.xml",
+        "base_url": "https://huggingface.co",
         "update_frequency": "daily",
         "item_limit": 50
       },
@@ -424,99 +267,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "xai_blog",
-        "name": "xAI Blog",
-        "description": "xAI Blog - lab_blog",
-        "version": "1.0.0",
-        "homepage": "https://x.ai",
-        "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
-      },
-      "categorization": {
-        "category": "lab_blog",
-        "type": "rss",
-        "priority": 2,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://x.ai/blog/rss/",
-        "base_url": "https://x.ai",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "tongyi_lab",
-        "name": "阿里通义实验室",
-        "description": "阿里通义实验室 - lab_blog",
-        "version": "1.0.0",
-        "homepage": "https://tongyi.aliyun.com",
-        "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
-      },
-      "categorization": {
-        "category": "lab_blog",
-        "type": "rss",
-        "priority": 2,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://tongyi.aliyun.com/blog/rss/",
-        "base_url": "https://tongyi.aliyun.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "HuggingFace Blog RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -531,15 +282,13 @@
         "version": "1.0.0",
         "homepage": "https://zhipu.ai",
         "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
+        "tags": ["blog"]
       },
       "categorization": {
         "category": "lab_blog",
         "type": "scraper",
         "priority": 2,
-        "language": "en"
+        "language": "zh"
       },
       "collector": {
         "type": "scraper",
@@ -569,7 +318,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "智谱AI - 可能需要爬虫"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -584,15 +333,13 @@
         "version": "1.0.0",
         "homepage": "https://www.jiqizhixin.com",
         "icon": "📰",
-        "tags": [
-          "media"
-        ]
+        "tags": ["media"]
       },
       "categorization": {
         "category": "media",
         "type": "rss",
         "priority": 1,
-        "language": "en"
+        "language": "zh"
       },
       "collector": {
         "type": "rss",
@@ -615,7 +362,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "机器之心 RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -630,9 +377,7 @@
         "version": "1.0.0",
         "homepage": "https://syncedreview.com",
         "icon": "📰",
-        "tags": [
-          "media"
-        ]
+        "tags": ["media"]
       },
       "categorization": {
         "category": "media",
@@ -661,7 +406,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "Synced RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -676,9 +421,7 @@
         "version": "1.0.0",
         "homepage": "https://www.technologyreview.com",
         "icon": "📰",
-        "tags": [
-          "media"
-        ]
+        "tags": ["media"]
       },
       "categorization": {
         "category": "media",
@@ -707,7 +450,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "MIT Tech Review RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -722,9 +465,7 @@
         "version": "1.0.0",
         "homepage": "https://the-decoder.com",
         "icon": "📰",
-        "tags": [
-          "media"
-        ]
+        "tags": ["media"]
       },
       "categorization": {
         "category": "media",
@@ -753,7 +494,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "The Decoder RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -762,355 +503,24 @@
     },
     {
       "metadata": {
-        "id": "semafor_ai",
-        "name": "Semafor AI",
-        "description": "Semafor AI - media",
+        "id": "the_verge_ai",
+        "name": "The Verge (AI)",
+        "description": "The Verge (AI) - media",
         "version": "1.0.0",
-        "homepage": "https://www.semafor.com",
+        "homepage": "https://www.theverge.com",
         "icon": "📰",
-        "tags": [
-          "media"
-        ]
+        "tags": ["media"]
       },
       "categorization": {
         "category": "media",
-        "type": "scraper",
-        "priority": 2,
-        "language": "en"
-      },
-      "collector": {
-        "type": "scraper",
-        "url": "https://www.semafor.com",
-        "base_url": "https://www.semafor.com",
-        "selectors": {
-          "container": ".item, article, .post",
-          "title": ".title, h1, h2, h3",
-          "url": "a[href]",
-          "description": ".description, .excerpt, .summary",
-          "author": ".author, .byline",
-          "published_at": "time, .date, [datetime]"
-        },
-        "render_js": false
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "product_hunt_ai",
-        "name": "Product Hunt - AI",
-        "description": "Product Hunt - AI - tools",
-        "version": "1.0.0",
-        "homepage": "https://www.producthunt.com",
-        "icon": "🛠️",
-        "tags": [
-          "tools"
-        ]
-      },
-      "categorization": {
-        "category": "tools",
-        "type": "rss",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://www.producthunt.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "futurepedia",
-        "name": "Futurepedia",
-        "description": "Futurepedia - tools",
-        "version": "1.0.0",
-        "homepage": "https://www.futurepedia.io",
-        "icon": "🛠️",
-        "tags": [
-          "tools"
-        ]
-      },
-      "categorization": {
-        "category": "tools",
-        "type": "rss",
-        "priority": 2,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://www.futurepedia.io",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "theresanai",
-        "name": "There's An AI For That",
-        "description": "There's An AI For That - tools",
-        "version": "1.0.0",
-        "homepage": "https://theresanaiforthat.com",
-        "icon": "🛠️",
-        "tags": [
-          "tools"
-        ]
-      },
-      "categorization": {
-        "category": "tools",
-        "type": "rss",
-        "priority": 2,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://theresanaiforthat.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "huggingface_spaces",
-        "name": "Hugging Face Spaces",
-        "description": "Hugging Face Spaces - tools",
-        "version": "1.0.0",
-        "homepage": "https://huggingface.co",
-        "icon": "🛠️",
-        "tags": [
-          "tools"
-        ]
-      },
-      "categorization": {
-        "category": "tools",
-        "type": "rss",
-        "priority": 2,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://huggingface.co",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "hacker_news",
-        "name": "Hacker News",
-        "description": "Hacker News - community",
-        "version": "1.0.0",
-        "homepage": "https://news.ycombinator.com",
-        "icon": "💬",
-        "tags": [
-          "community"
-        ]
-      },
-      "categorization": {
-        "category": "community",
-        "type": "rss",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://news.ycombinator.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "reddit_ml",
-        "name": "Reddit r/MachineLearning",
-        "description": "Reddit r/MachineLearning - community",
-        "version": "1.0.0",
-        "homepage": "https://www.reddit.com/r/MachineLearning",
-        "icon": "💬",
-        "tags": [
-          "community"
-        ]
-      },
-      "categorization": {
-        "category": "community",
-        "type": "rss",
-        "priority": 2,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://www.reddit.com/r/MachineLearning",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "lilog",
-        "name": "Li'Log (Lilian Weng)",
-        "description": "Li'Log (Lilian Weng) - community",
-        "version": "1.0.0",
-        "homepage": "https://lilianweng.github.io",
-        "icon": "💬",
-        "tags": [
-          "community"
-        ]
-      },
-      "categorization": {
-        "category": "community",
         "type": "rss",
         "priority": 3,
         "language": "en"
       },
       "collector": {
         "type": "rss",
-        "rss_url": "https://lilianweng.github.io/feed.xml",
-        "base_url": "https://lilianweng.github.io",
+        "rss_url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "base_url": "https://www.theverge.com",
         "update_frequency": "daily",
         "item_limit": 50
       },
@@ -1128,191 +538,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "the_batch",
-        "name": "The Batch (DeepLearning.AI)",
-        "description": "The Batch (DeepLearning.AI) - newsletter",
-        "version": "1.0.0",
-        "homepage": "https://www.deeplearning.ai",
-        "icon": "📧",
-        "tags": [
-          "newsletter"
-        ]
-      },
-      "categorization": {
-        "category": "newsletter",
-        "type": "rss",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://www.deeplearning.ai",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "import_ai",
-        "name": "Import AI",
-        "description": "Import AI - newsletter",
-        "version": "1.0.0",
-        "homepage": "https://www.importai.org",
-        "icon": "📧",
-        "tags": [
-          "newsletter"
-        ]
-      },
-      "categorization": {
-        "category": "newsletter",
-        "type": "rss",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://www.importai.org",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "bens_bites",
-        "name": "Ben's Bites",
-        "description": "Ben's Bites - newsletter",
-        "version": "1.0.0",
-        "homepage": "https://bensbites.beehiiv.com",
-        "icon": "📧",
-        "tags": [
-          "newsletter"
-        ]
-      },
-      "categorization": {
-        "category": "newsletter",
-        "type": "rss",
-        "priority": 1,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": null,
-        "base_url": "https://bensbites.beehiiv.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "huggingface_blog",
-        "name": "HuggingFace Blog",
-        "description": "HuggingFace Blog - lab_blog",
-        "version": "1.0.0",
-        "homepage": "https://huggingface.co",
-        "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
-      },
-      "categorization": {
-        "category": "lab_blog",
-        "type": "rss",
-        "priority": 2,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://huggingface.co/blog/feed.xml",
-        "base_url": "https://huggingface.co",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
+        "notes": "The Verge AI RSS"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -1327,9 +553,7 @@
         "version": "1.0.0",
         "homepage": "https://github.com/trending",
         "icon": "🛠️",
-        "tags": [
-          "code"
-        ]
+        "tags": ["code"]
       },
       "categorization": {
         "category": "tools",
@@ -1365,205 +589,7 @@
       "status": {
         "enabled": true,
         "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "nature_ai",
-        "name": "Nature AI",
-        "description": "Nature AI - academic",
-        "version": "1.0.0",
-        "homepage": "https://www.nature.com",
-        "icon": "🎓",
-        "tags": [
-          "media"
-        ]
-      },
-      "categorization": {
-        "category": "academic",
-        "type": "rss",
-        "priority": 3,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://www.nature.com/nmachintelligence/rss.xml",
-        "base_url": "https://www.nature.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "the_verge_ai",
-        "name": "The Verge (AI)",
-        "description": "The Verge (AI) - media",
-        "version": "1.0.0",
-        "homepage": "https://www.theverge.com",
-        "icon": "📰",
-        "tags": [
-          "media"
-        ]
-      },
-      "categorization": {
-        "category": "media",
-        "type": "rss",
-        "priority": 3,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
-        "base_url": "https://www.theverge.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": true,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "neurips",
-        "name": "NeurIPS",
-        "description": "NeurIPS - academic",
-        "version": "1.0.0",
-        "homepage": "https://neurips.cc",
-        "icon": "🎓",
-        "tags": [
-          "conference"
-        ]
-      },
-      "categorization": {
-        "category": "academic",
-        "type": "scraper",
-        "priority": 4,
-        "language": "en"
-      },
-      "collector": {
-        "type": "scraper",
-        "url": "https://neurips.cc",
-        "base_url": "https://neurips.cc",
-        "selectors": {
-          "container": ".item, article, .post",
-          "title": ".title, h1, h2, h3",
-          "url": "a[href]",
-          "description": ".description, .excerpt, .summary",
-          "author": ".author, .byline",
-          "published_at": "time, .date, [datetime]"
-        },
-        "render_js": false
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": false,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    },
-    {
-      "metadata": {
-        "id": "icml",
-        "name": "ICML",
-        "description": "ICML - academic",
-        "version": "1.0.0",
-        "homepage": "https://icml.cc",
-        "icon": "🎓",
-        "tags": [
-          "conference"
-        ]
-      },
-      "categorization": {
-        "category": "academic",
-        "type": "scraper",
-        "priority": 4,
-        "language": "en"
-      },
-      "collector": {
-        "type": "scraper",
-        "url": "https://icml.cc",
-        "base_url": "https://icml.cc",
-        "selectors": {
-          "container": ".item, article, .post",
-          "title": ".title, h1, h2, h3",
-          "url": "a[href]",
-          "description": ".description, .excerpt, .summary",
-          "author": ".author, .byline",
-          "published_at": "time, .date, [datetime]"
-        },
-        "render_js": false
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": true,
-        "stable": false,
-        "notes": "由迁移工具自动转换"
+        "notes": "GitHub Trending - 由GitHub采集器处理"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -1571,54 +597,7 @@
       }
     }
   ],
-  "fallback_sources": [
-    {
-      "metadata": {
-        "id": "machine_learning_mastery",
-        "name": "Machine Learning Mastery",
-        "description": "Machine Learning Mastery - lab_blog",
-        "version": "1.0.0",
-        "homepage": "https://machinelearningmastery.com",
-        "icon": "🏢",
-        "tags": [
-          "blog"
-        ]
-      },
-      "categorization": {
-        "category": "lab_blog",
-        "type": "rss",
-        "priority": 6,
-        "language": "en"
-      },
-      "collector": {
-        "type": "rss",
-        "rss_url": "https://machinelearningmastery.com/feed/",
-        "base_url": "https://machinelearningmastery.com",
-        "update_frequency": "daily",
-        "item_limit": 50
-      },
-      "authentication": {
-        "type": "none"
-      },
-      "rate_limit": {
-        "requests_per_minute": 10
-      },
-      "filters": {},
-      "cache": {
-        "enabled": true,
-        "ttl_minutes": 60
-      },
-      "status": {
-        "enabled": false,
-        "stable": false,
-        "notes": "由迁移工具自动转换"
-      },
-      "monitoring": {
-        "log_level": "INFO",
-        "alert_on_failure": false
-      }
-    }
-  ],
+  "fallback_sources": [],
   "global_settings": {
     "default_rate_limit": {
       "requests_per_minute": 10,

@@ -294,9 +294,10 @@ class CategoryFilterConfig(BaseModel):
     """类别过滤器配置"""
     description: str = "按类型分类和过滤配置"
     enabled: bool = True
-    target_count: int = 3
-    academic_count: int = 1
-    media_count: int = 2
+    min_target_count: int = 10
+    max_target_count: int = 15
+    academic_min_count: int = 1
+    media_min_count: int = 2
 
 
 class DailyOutputThresholds(BaseModel):

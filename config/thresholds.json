@@ -47,22 +47,23 @@
 
   "daily_output": {
     "max_items_per_category": {
-      "highlights": 3,
-      "tech_breakthrough": 10,
-      "industry_news": 8,
+      "highlights": 5,
+      "tech_breakthrough": 15,
+      "industry_news": 15,
       "policy": 5,
-      "expert_opinion": 3
+      "expert_opinion": 5
     },
-    "min_total_items": 5,
-    "fallback_min_total_items": 3
+    "min_total_items": 10,
+    "fallback_min_total_items": 5
   },
 
   "category_filter": {
-    "description": "按类型分类和过滤配置",
+    "description": "按类型分类和过滤配置 - 每天10-15条",
     "enabled": true,
-    "target_count": 3,
-    "academic_count": 1,
-    "media_count": 2
+    "min_target_count": 10,
+    "max_target_count": 15,
+    "academic_min_count": 1,
+    "media_min_count": 2
   },
 
   "scoring": {

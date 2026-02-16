@@ -434,14 +434,23 @@ class FeishuFormatter:
             lines.append("")
 
             for article in articles:
-                lines.append(f"## {article.get('title', '')}")
+                title = article.get('title', '')
                 summary = article.get("summary", article.get("description", ""))
+                url = article.get('url', '')
+                source = article.get('source', '')
+
+                lines.append(f"## {title}")
                 if summary:
                     lines.append(summary[:200])
+                # 添加来源和链接
+                if source:
+                    lines.append(f"*来源: {source}*")
+                if url:
+                    lines.append(f"[查看详情]({url})")
                 lines.append("")
 
         lines.append("---")
-        lines.append(f"✅ 数据截至 {date_str} | 来源：arXiv / 官方博客 / 顶会等")
+        lines.append(f"✅ 数据截至 {date_str} | 来源：arXiv / 官方博客 / 专业媒体 / 社区等")
 
         return "\n".join(lines)
 
