@@ -166,13 +166,23 @@ class ThresholdFilter:
         """关键词匹配评分"""
         # 使用matched_categories或简单统计
         matched = article.get("matched_categories", [])
+        # 处理 None 值
+        if matched is None:
+            matched = []
         if matched:
             # 至少匹配一个分类给0.6分，每多一个增加0.1分
             return min(0.6 + len(matched) * 0.1, 1.0)
 
         # 没有matched_categories时简单检查
-        text = f"{article.get('title', '')} {article.get('description', '')}".lower()
+        # 处理 None 值
+        title = article.get('title', '') or ''
+        description = article.get('description', '') or ''
+        text = f"{title} {description}".lower()
         keywords = self.config.keywords.get_all_keywords()
+
+        # 确保 keywords 不是 None
+        if keywords is None:
+            keywords = []
 
         matches = sum(1 for kw in keywords if kw.lower() in text)
         return min(matches * 0.1, 1.0)
@@ -220,6 +230,12 @@ class ThresholdFilter:
         """检查内容长度阈值"""
         title = article.get("title", "")
         description = article.get("description", "")
+
+        # 处理 None 值
+        if title is None:
+            title = ""
+        if description is None:
+            description = ""
 
         title_len = len(title)
         desc_len = len(description)
