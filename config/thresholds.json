@@ -66,6 +66,14 @@
     "fallback_min_total_items": 3
   },
 
+  "category_filter": {
+    "description": "按类型分类和过滤配置",
+    "enabled": true,
+    "target_count": 3,
+    "academic_count": 1,
+    "media_count": 2
+  },
+
   "scoring": {
     "description": "资讯评分权重，总分高于此值视为'重大更新'",
     "weights": {

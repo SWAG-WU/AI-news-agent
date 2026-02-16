@@ -24,7 +24,7 @@ from src.summarizer import create_summarizer
 from src.filters.deduplicator import Deduplicator
 from src.filters.keyword_filter import KeywordFilter
 from src.filters.threshold_filter import ThresholdFilter
-from src.filters.time_filter import TimeFilter
+from src.filters.category_filter import CategoryFilter
 from src.formatter import FeishuFormatter
 from src.sender import create_sender
 
@@ -61,8 +61,8 @@ class AINewsAgent:
             ThresholdFilter(self.config),
         ]
         self.deduplicator = Deduplicator(self.storage, self.config)
-        # 时间过滤器（用于确保近期资讯占比 > 80%），传入 storage 以获取未发送的历史文章
-        self.time_filter = TimeFilter(self.config, self.storage) if self.config.thresholds.time_filter.enabled else None
+        # 类别过滤器（用于确保 1 条学术 + 2 条媒体），传入 storage 以获取未发送的历史文章
+        self.category_filter = CategoryFilter(self.config, self.storage) if self.config.thresholds.category_filter.enabled else None
         # 测试模式使用模拟摘要生成器
         use_mock = self.config.is_test_mode()
         self.summarizer = create_summarizer(self.config, mock=use_mock)
@@ -97,11 +97,11 @@ class AINewsAgent:
             # 3. 去重
             unique_news = await self._deduplicate_news(filtered_news)
 
-            # 4. 应用时间过滤器（确保 10 条输出，80% 近期）
-            time_filtered_news = await self._apply_time_filter(unique_news)
+            # 4. 应用类别过滤器（确保 1 条学术 + 2 条媒体输出）
+            category_filtered_news = await self._apply_category_filter(unique_news)
 
             # 5. 生成摘要
-            summarized_news = await self._summarize_news(time_filtered_news)
+            summarized_news = await self._summarize_news(category_filtered_news)
 
             # 6. 格式化输出
             report = await self._format_report(summarized_news)
@@ -170,21 +170,20 @@ class AINewsAgent:
 
         return filtered
 
-    async def _apply_time_filter(self, news: list) -> list:
-        """应用时间过滤器，确保每日输出满足数量和比例要求"""
-        logger.info("Step 2.5: 应用时间过滤器...")
+    async def _apply_category_filter(self, news: list) -> list:
+        """应用类别过滤器，确保每日输出满足类型数量要求"""
+        logger.info("Step 4: 应用类别过滤器...")
 
-        if not self.time_filter:
+        if not self.category_filter:
             return news
 
-        # 使用新的时间过滤方法，确保输出 10 条（80% 近期，20% 历史）
-        filtered = self.time_filter.filter_for_daily_output(news)
+        # 使用类别过滤方法，确保输出 1 条学术 + 2 条媒体
+        filtered = self.category_filter.filter_for_daily_output(news)
 
         # 输出统计信息
-        stats = self.time_filter.get_stats(filtered)
+        stats = self.category_filter.get_stats(filtered)
         logger.info(f"  最终输出: {len(filtered)} 条")
-        logger.info(f"  时间范围: {stats['cutoff_date'][:10]} 至 {stats['today'][:10]}")
-        logger.info(f"  近期比例: {stats['recent_count']}/{stats['total']} ({stats['recent_ratio']:.1%})")
+        logger.info(f"  类型分布: {stats}")
 
         return filtered
 

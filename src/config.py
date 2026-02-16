@@ -300,6 +300,15 @@ class TimeFilterConfig(BaseModel):
     min_recent_ratio: float = 0.7
 
 
+class CategoryFilterConfig(BaseModel):
+    """类别过滤器配置"""
+    description: str = "按类型分类和过滤配置"
+    enabled: bool = True
+    target_count: int = 3
+    academic_count: int = 1
+    media_count: int = 2
+
+
 class DailyOutputThresholds(BaseModel):
     """每日输出阈值配置"""
     max_items_per_category: Dict[str, int]
@@ -337,6 +346,7 @@ class ThresholdsConfig(BaseModel):
     content: ContentThresholds
     time: TimeThresholds
     time_filter: TimeFilterConfig = Field(default_factory=TimeFilterConfig)
+    category_filter: CategoryFilterConfig = Field(default_factory=CategoryFilterConfig)
     daily_output: DailyOutputThresholds
     scoring: ScoringThresholds
     deduplication: DeduplicationThresholds
