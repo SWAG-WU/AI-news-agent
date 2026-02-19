@@ -36,9 +36,11 @@ class CategoryFilter:
 
     # 输出配置
     DEFAULT_MIN_TARGET_COUNT = 10  # 最小输出数量
-    DEFAULT_MAX_TARGET_COUNT = 15  # 最大输出数量
+    DEFAULT_MAX_TARGET_COUNT = 10  # 最大输出数量（固定每天10条）
     DEFAULT_ACADEMIC_MIN_COUNT = 1  # 最少学术类数量
+    DEFAULT_ACADEMIC_MAX_COUNT = 3  # 最多学术类数量
     DEFAULT_MEDIA_MIN_COUNT = 2  # 最少媒体类数量
+    DEFAULT_LATEST_COUNT = 3  # 最新资讯数量（按时间排序）
 
     # 填补优先级（当学术/媒体不足时，按此顺序填补）
     FALLBACK_PRIORITY = [
@@ -112,14 +114,18 @@ class CategoryFilter:
         self.min_target_count = self.DEFAULT_MIN_TARGET_COUNT
         self.max_target_count = self.DEFAULT_MAX_TARGET_COUNT
         self.academic_min_count = self.DEFAULT_ACADEMIC_MIN_COUNT
+        self.academic_max_count = self.DEFAULT_ACADEMIC_MAX_COUNT
         self.media_min_count = self.DEFAULT_MEDIA_MIN_COUNT
+        self.latest_count = self.DEFAULT_LATEST_COUNT
 
         if config and hasattr(config, 'thresholds') and hasattr(config.thresholds, 'category_filter'):
             cf_config = config.thresholds.category_filter
             self.min_target_count = getattr(cf_config, 'min_target_count', self.DEFAULT_MIN_TARGET_COUNT)
             self.max_target_count = getattr(cf_config, 'max_target_count', self.DEFAULT_MAX_TARGET_COUNT)
             self.academic_min_count = getattr(cf_config, 'academic_min_count', self.DEFAULT_ACADEMIC_MIN_COUNT)
+            self.academic_max_count = getattr(cf_config, 'academic_max_count', self.DEFAULT_ACADEMIC_MAX_COUNT)
             self.media_min_count = getattr(cf_config, 'media_min_count', self.DEFAULT_MEDIA_MIN_COUNT)
+            self.latest_count = getattr(cf_config, 'latest_count', self.DEFAULT_LATEST_COUNT)
 
     def classify(self, articles: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         """
@@ -193,11 +199,11 @@ class CategoryFilter:
         """
         为每日输出进行过滤，确保输出数量和类型满足要求
 
-        规则：
-        1. 总输出数量：10-15 条
-        2. 至少 1 条学术类资讯
-        3. 至少 2 条媒体类资讯
-        4. 其余用各类资讯填补（优先级：实验室博客 > 工具类 > 社区类 > 通讯类）
+        新规则（按优先级）：
+        1. 首先选择 3 条最新资讯（按发布时间排序，越靠近运行时间越好）
+        2. 从剩余资讯中选择 1-3 条学术类资讯
+        3. 其余用其他类型资讯填补至 10 条
+        4. 严格控制学术资讯不超过 3 条
 
         Args:
             articles: 资讯列表
@@ -222,78 +228,75 @@ class CategoryFilter:
                    f"社区类: {len(community_articles)}, 通讯类: {len(newsletter_articles)}")
 
         result = []
+        selected_urls = set()
 
-        # 1. 优先选择学术类文章（至少 1 条）
-        if academic_articles:
-            sorted_academic = self._sort_articles_by_recency_and_score(academic_articles)
-            selected = min(self.academic_min_count, len(sorted_academic))
-            result.extend(sorted_academic[:selected])
-            logger.info(f"  选择学术类: {selected} 条")
+        # ========== 第1步：选择 3 条最新资讯（按时间优先） ==========
+        all_articles_by_time = self._sort_articles_by_recency_only(articles)
+        latest_articles = []
+        for article in all_articles_by_time:
+            if len(latest_articles) >= self.latest_count:
+                break
+            url = article.get('url', '')
+            if url and url not in selected_urls:
+                latest_articles.append(article)
+                selected_urls.add(url)
+
+        result.extend(latest_articles)
+        logger.info(f"  选择最新资讯: {len(latest_articles)} 条")
+
+        # ========== 第2步：从剩余资讯中选择 1-3 条学术类资讯 ==========
+        remaining_academic = [a for a in academic_articles if a.get('url', '') not in selected_urls]
+        if remaining_academic:
+            sorted_academic = self._sort_articles_by_recency_and_score(remaining_academic)
+            # 学术资讯数量控制在 1-3 条之间，根据可用数量动态调整
+            academic_to_select = min(self.academic_max_count, len(sorted_academic))
+            # 如果学术资讯足够多，至少选择 1 条
+            if academic_to_select >= 1:
+                academic_to_select = max(self.academic_min_count, academic_to_select)
+            selected_academic = sorted_academic[:academic_to_select]
+            result.extend(selected_academic)
+            selected_urls.update(a.get('url', '') for a in selected_academic)
+            logger.info(f"  选择学术类: {len(selected_academic)} 条")
         else:
             logger.warning(f"  学术类文章不足 (0/{self.academic_min_count})")
 
-        # 2. 优先选择媒体类文章（至少 2 条）
-        if media_articles:
-            sorted_media = self._sort_articles_by_recency_and_score(media_articles)
-            selected = min(self.media_min_count, len(sorted_media))
-            result.extend(sorted_media[:selected])
-            logger.info(f"  选择媒体类: {selected} 条")
-        else:
-            logger.warning(f"  媒体类文章不足 ({len(media_articles)}/{self.media_min_count})")
-
-        # 3. 计算还需填补的数量，目标是达到 min_target_count
-        target_count = self.min_target_count
+        # ========== 第3步：计算还需填补的数量 ==========
+        target_count = self.min_target_count  # 固定 10 条
         needed = target_count - len(result)
 
-        # 4. 按优先级填补剩余名额
-        # 收集所有剩余文章（学术、媒体、实验室博客、工具、社区、通讯）
-        remaining_pools = []
+        if needed > 0:
+            logger.info(f"  还需填补: {needed} 条")
 
-        # 学术类剩余
-        if academic_articles:
-            remaining_academic = academic_articles[self.academic_min_count:]
-            if remaining_academic:
-                remaining_pools.append((self.CATEGORY_ACADEMIC, remaining_academic))
+            # ========== 第4步：按优先级填补剩余名额 ==========
+            # 收集所有剩余文章（排除学术类的上限控制）
+            remaining_pools = []
 
-        # 媒体类剩余
-        if media_articles:
-            remaining_media = media_articles[self.media_min_count:]
+            # 媒体类剩余（排除已选中的）
+            remaining_media = [a for a in media_articles if a.get('url', '') not in selected_urls]
             if remaining_media:
                 remaining_pools.append((self.CATEGORY_MEDIA, remaining_media))
 
-        # 其他类别
-        remaining_pools.extend([
-            (self.CATEGORY_LAB_BLOG, lab_blog_articles),
-            (self.CATEGORY_TOOLS, tools_articles),
-            (self.CATEGORY_COMMUNITY, community_articles),
-            (self.CATEGORY_NEWSLETTER, newsletter_articles),
-        ])
+            # 其他类别（按优先级）
+            remaining_pools.extend([
+                (self.CATEGORY_LAB_BLOG, [a for a in lab_blog_articles if a.get('url', '') not in selected_urls]),
+                (self.CATEGORY_TOOLS, [a for a in tools_articles if a.get('url', '') not in selected_urls]),
+                (self.CATEGORY_COMMUNITY, [a for a in community_articles if a.get('url', '') not in selected_urls]),
+                (self.CATEGORY_NEWSLETTER, [a for a in newsletter_articles if a.get('url', '') not in selected_urls]),
+            ])
 
-        # 填补剩余名额
-        for category_name, pool in remaining_pools:
-            if needed <= 0:
-                break
-            if pool:
-                sorted_pool = self._sort_articles_by_recency_and_score(pool)
-                selected = min(needed, len(sorted_pool))
-                result.extend(sorted_pool[:selected])
-                needed -= selected
-                logger.info(f"  从 {category_name} 填补: {selected} 条")
+            # 填补剩余名额
+            for category_name, pool in remaining_pools:
+                if needed <= 0:
+                    break
+                if pool:
+                    sorted_pool = self._sort_articles_by_recency_and_score(pool)
+                    selected = min(needed, len(sorted_pool))
+                    result.extend(sorted_pool[:selected])
+                    selected_urls.update(a.get('url', '') for a in sorted_pool[:selected])
+                    needed -= selected
+                    logger.info(f"  从 {category_name} 填补: {selected} 条")
 
-        # 5. 如果仍然不足，尝试增加到 max_target_count
-        if needed > 0 and len(result) < self.max_target_count:
-            additional_needed = min(self.max_target_count - len(result), needed)
-            if additional_needed > 0:
-                # 从所有文章中选择未被选中的
-                selected_urls = {a.get('url', '') for a in result}
-                all_remaining = [a for a in articles if a.get('url', '') not in selected_urls]
-                sorted_remaining = self._sort_articles_by_recency_and_score(all_remaining)
-                additional = min(additional_needed, len(sorted_remaining))
-                result.extend(sorted_remaining[:additional])
-                needed -= additional
-                logger.info(f"  从所有文章补充: {additional} 条")
-
-        # 6. 如果仍然不足，从数据库获取未发送的历史文章补充
+        # ========== 第5步：如果仍然不足，从数据库获取未发送的历史文章补充 ==========
         if needed > 0 and self.storage:
             logger.info(f"CategoryFilter: 当前文章不足 {len(result)} 条，从数据库获取未发送的历史文章补充")
             unsent_articles = self.storage.get_unsent(limit=needed)
@@ -307,7 +310,7 @@ class CategoryFilter:
 
             logger.info(f"CategoryFilter: 从数据库补充了 {len(unsent_articles)} 条未发送的历史文章")
 
-        # 7. 最终保证输出数量在 min-max 范围内
+        # ========== 第6步：最终保证输出数量固定为 10 条 ==========
         result = result[:self.max_target_count]
 
         # 输出统计
@@ -315,6 +318,25 @@ class CategoryFilter:
         logger.info(f"CategoryFilter: 输出 {len(result)} 条 - {stats}")
 
         return result
+
+    def _sort_articles_by_recency_only(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        纯按时间排序文章：优先选择最新的文章（越靠近运行时间越好）
+
+        Args:
+            articles: 文章列表
+
+        Returns:
+            按时间排序的文章列表（最新的在前）
+        """
+        def sort_key(article):
+            published_at = self._extract_published_at(article)
+            # 时间戳：越新越好
+            timestamp = published_at.timestamp() if published_at else 0
+            # 使用负时间戳让越新的排在前面
+            return -timestamp
+
+        return sorted(articles, key=sort_key, reverse=False)
 
     def _sort_articles_by_recency_and_score(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """

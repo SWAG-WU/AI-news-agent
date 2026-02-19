@@ -58,12 +58,14 @@
   },
 
   "category_filter": {
-    "description": "按类型分类和过滤配置 - 每天10-15条",
+    "description": "按类型分类和过滤配置 - 每天固定10条",
     "enabled": true,
     "min_target_count": 10,
-    "max_target_count": 15,
+    "max_target_count": 10,
     "academic_min_count": 1,
-    "media_min_count": 2
+    "academic_max_count": 3,
+    "media_min_count": 2,
+    "latest_count": 3
   },
 
   "scoring": {
@@ -80,9 +82,10 @@
 
   "deduplication": {
     "enabled": true,
-    "method": "url_hash",
+    "method": "all",
     "similarity_threshold": 0.85,
-    "content_hash_algorithm": "sha256"
+    "content_hash_algorithm": "sha256",
+    "check_recent_days": 7
   },
 
   "retry": {
