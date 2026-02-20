@@ -1,0 +1,42 @@
+name: AI Daily News Collector
+
+on:
+  schedule:
+    # UTC 1:00 = 北京时间 9:00 (每天早上9点运行)
+    - cron: '0 1 * * *'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run collector
+        env:
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
+          ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
+          LOG_LEVEL: INFO
+          TZ: Asia/Shanghai
+        run: python main.py
+
+      - name: Upload log on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: error-log
+          path: logs/

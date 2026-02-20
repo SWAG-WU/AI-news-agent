@@ -89,9 +89,9 @@
         "ttl_minutes": 60
       },
       "status": {
-        "enabled": true,
+        "enabled": false,
         "stable": true,
-        "notes": "Papers With Code RSS"
+        "notes": "Papers With Code RSS - huggingface.co 在中国被封锁，DNS解析失败"
       },
       "monitoring": {
         "log_level": "INFO",
@@ -160,7 +160,7 @@
       },
       "collector": {
         "type": "rss",
-        "rss_url": "https://www.nature.com/nmachintelligence/rss.xml",
+        "rss_url": "https://www.nature.com/nmachintellig/rss.xml",
         "base_url": "https://www.nature.com",
         "update_frequency": "daily",
         "item_limit": 50
@@ -265,9 +265,340 @@
         "ttl_minutes": 60
       },
       "status": {
+        "enabled": false,
+        "stable": true,
+        "notes": "HuggingFace Blog RSS - DNS解析失败"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+    {
+      "metadata": {
+        "id": "google_deepmind",
+        "name": "Google DeepMind",
+        "description": "Google DeepMind - lab_blog",
+        "version": "1.0.0",
+        "homepage": "https://deepmind.google",
+        "icon": "🏢",
+        "tags": ["blog"]
+      },
+      "categorization": {
+        "category": "lab_blog",
+        "type": "scraper",
+        "priority": 1,
+        "language": "en"
+      },
+      "collector": {
+        "type": "scraper",
+        "url": "https://deepmind.google/discover/blog/",
+        "base_url": "https://deepmind.google",
+        "selectors": {
+          "container": "article, .blog-post, [data-blog-post]",
+          "title": "h1, h2, h3, .title",
+          "url": "a[href]",
+          "description": ".description, .excerpt, .summary, p",
+          "author": ".author, .byline",
+          "published_at": "time, .date, [datetime]"
+        },
+        "render_js": true,
+        "item_limit": 50
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {},
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
+        "enabled": false,
+        "stable": false,
+        "notes": "Google DeepMind - 无RSS，需要爬虫，暂未实现"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+    {
+      "metadata": {
+        "id": "anthropic_blog",
+        "name": "Anthropic",
+        "description": "Anthropic - lab_blog",
+        "version": "1.0.0",
+        "homepage": "https://www.anthropic.com",
+        "icon": "🏢",
+        "tags": ["blog"]
+      },
+      "categorization": {
+        "category": "lab_blog",
+        "type": "scraper",
+        "priority": 1,
+        "language": "en"
+      },
+      "collector": {
+        "type": "scraper",
+        "url": "https://www.anthropic.com/news",
+        "base_url": "https://www.anthropic.com",
+        "selectors": {
+          "container": "article, .post, .news-item",
+          "title": "h1, h2, h3, .title",
+          "url": "a[href]",
+          "description": ".description, .excerpt, .summary, p",
+          "author": ".author, .byline",
+          "published_at": "time, .date, [datetime]"
+        },
+        "render_js": true,
+        "item_limit": 50
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {},
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
+        "enabled": false,
+        "stable": false,
+        "notes": "Anthropic - 无RSS，需要爬虫，暂未实现"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+    {
+      "metadata": {
+        "id": "meta_ai_blog",
+        "name": "Meta AI",
+        "description": "Meta AI - lab_blog",
+        "version": "1.0.0",
+        "homepage": "https://ai.meta.com",
+        "icon": "🏢",
+        "tags": ["blog"]
+      },
+      "categorization": {
+        "category": "lab_blog",
+        "type": "rss",
+        "priority": 1,
+        "language": "en"
+      },
+      "collector": {
+        "type": "rss",
+        "rss_url": "https://ai.meta.com/blog/rss/",
+        "base_url": "https://ai.meta.com",
+        "update_frequency": "daily",
+        "item_limit": 50
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {},
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
+        "enabled": false,
+        "stable": true,
+        "notes": "Meta AI Blog RSS - 404 RSS不存在"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+    {
+      "metadata": {
+        "id": "microsoft_research",
+        "name": "Microsoft Research",
+        "description": "Microsoft Research - lab_blog",
+        "version": "1.0.0",
+        "homepage": "https://www.microsoft.com/en-us/research",
+        "icon": "🏢",
+        "tags": ["blog"]
+      },
+      "categorization": {
+        "category": "lab_blog",
+        "type": "rss",
+        "priority": 2,
+        "language": "en"
+      },
+      "collector": {
+        "type": "rss",
+        "rss_url": "https://www.microsoft.com/en-us/research/blog/feed/",
+        "base_url": "https://www.microsoft.com",
+        "update_frequency": "daily",
+        "item_limit": 50
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {},
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
         "enabled": true,
         "stable": true,
-        "notes": "HuggingFace Blog RSS"
+        "notes": "Microsoft Research Blog RSS"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+    {
+      "metadata": {
+        "id": "nvidia_blog",
+        "name": "NVIDIA",
+        "description": "NVIDIA - lab_blog",
+        "version": "1.0.0",
+        "homepage": "https://www.nvidia.com",
+        "icon": "🏢",
+        "tags": ["blog"]
+      },
+      "categorization": {
+        "category": "lab_blog",
+        "type": "rss",
+        "priority": 2,
+        "language": "en"
+      },
+      "collector": {
+        "type": "rss",
+        "rss_url": "https://nvidianews.typepad.com/nvidia-blog/rss.xml",
+        "base_url": "https://www.nvidia.com",
+        "update_frequency": "daily",
+        "item_limit": 50
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {},
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
+        "enabled": false,
+        "stable": true,
+        "notes": "NVIDIA Blog RSS - 403 禁止访问"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+    {
+      "metadata": {
+        "id": "mistral_ai",
+        "name": "Mistral AI",
+        "description": "Mistral AI - lab_blog",
+        "version": "1.0.0",
+        "homepage": "https://mistral.ai",
+        "icon": "🏢",
+        "tags": ["blog"]
+      },
+      "categorization": {
+        "category": "lab_blog",
+        "type": "rss",
+        "priority": 2,
+        "language": "en"
+      },
+      "collector": {
+        "type": "rss",
+        "rss_url": "https://mistral.ai/news/rss/",
+        "base_url": "https://mistral.ai",
+        "update_frequency": "daily",
+        "item_limit": 50
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {},
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
+        "enabled": false,
+        "stable": true,
+        "notes": "Mistral AI Blog RSS - 404 RSS不存在"
+      },
+      "monitoring": {
+        "log_level": "INFO",
+        "alert_on_failure": false
+      }
+    },
+    {
+      "metadata": {
+        "id": "xai_blog",
+        "name": "xAI",
+        "description": "xAI - lab_blog",
+        "version": "1.0.0",
+        "homepage": "https://x.ai",
+        "icon": "🏢",
+        "tags": ["blog"]
+      },
+      "categorization": {
+        "category": "lab_blog",
+        "type": "scraper",
+        "priority": 3,
+        "language": "en"
+      },
+      "collector": {
+        "type": "scraper",
+        "url": "https://x.ai/blog",
+        "base_url": "https://x.ai",
+        "selectors": {
+          "container": "article, .post, .blog-post",
+          "title": "h1, h2, .title",
+          "url": "a[href]",
+          "description": ".description, .excerpt, .summary, p",
+          "author": ".author, .byline",
+          "published_at": "time, .date, [datetime]"
+        },
+        "render_js": false
+      },
+      "authentication": {
+        "type": "none"
+      },
+      "rate_limit": {
+        "requests_per_minute": 10
+      },
+      "filters": {},
+      "cache": {
+        "enabled": true,
+        "ttl_minutes": 60
+      },
+      "status": {
+        "enabled": true,
+        "stable": false,
+        "notes": "xAI Blog - 需要爬虫"
       },
       "monitoring": {
         "log_level": "INFO",

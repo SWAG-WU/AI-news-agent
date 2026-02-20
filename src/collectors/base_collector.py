@@ -77,16 +77,23 @@ class BaseCollector(ABC):
                 ttl_dns_cache=300        # DNS缓存5分钟
             )
 
-            # 代理配置
+            # 代理配置 - 支持从配置或环境变量读取
             proxy = None
             if self.config.https_proxy:
                 proxy = self.config.https_proxy
+                logger.info(f"使用配置的代理: {proxy}")
+            elif self.config.http_proxy:
+                proxy = self.config.http_proxy
+                logger.info(f"使用配置的代理: {proxy}")
 
             self.session = aiohttp.ClientSession(
                 timeout=timeout,
                 connector=connector,
                 trust_env=True,  # 从环境变量读取代理
             )
+
+            # 如果配置了代理，保存为实例变量供请求时使用
+            self._proxy = proxy
 
     async def _close_session(self):
         """关闭HTTP会话"""
@@ -146,6 +153,7 @@ class BaseCollector(ABC):
                 headers=default_headers,
                 params=params,
                 json=data,
+                proxy=getattr(self, '_proxy', None),
             ) as response:
                 response.raise_for_status()
                 return await response.text()
