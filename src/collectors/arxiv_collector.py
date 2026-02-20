@@ -91,8 +91,14 @@ class ArxivCollector(BaseCollector):
 
     def _build_query(self) -> str:
         """构建arXiv搜索查询"""
-        # 使用配置的查询或默认分类查询
-        if self.source_config and self.source_config.config.search_query:
+        # 新格式：使用 collector.params.search_query
+        if self.source_config and self.source_config.collector:
+            search_query = self.source_config.collector.get("params", {}).get("search_query")
+            if search_query:
+                return search_query
+
+        # 旧格式兼容：config.search_query
+        if self.source_config and self.source_config.config and self.source_config.config.search_query:
             return self.source_config.config.search_query
 
         # 默认：查询AI相关分类

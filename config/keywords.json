@@ -4,6 +4,42 @@
   "description": "定义筛选AI资讯的关键词，按类别分组",
 
   "categories": {
+    "new_model": {
+      "name": "新模型发布",
+      "description": "新AI模型发布相关关键词 - 用于突破每日10条限制",
+      "keywords": [
+        "new model",
+        "model release",
+        "announces",
+        "unveils",
+        "introduces",
+        "launches",
+        "debuts",
+        "reveals",
+        "发布",
+        "推出",
+        "推出全新",
+        "发布新",
+        "发布全新",
+        "introducing",
+        "presenting",
+        "we're introducing",
+        "we are introducing",
+        "we're launching",
+        "we are launching",
+        "we're releasing",
+        "we are releasing",
+        "meet the",
+        "introducing the",
+        "announcing the",
+        "presents",
+        "model family",
+        "flagship model",
+        "next-generation",
+        "next generation",
+        "breakthrough model"
+      ]
+    },
     "tech": {
       "name": "核心技术",
       "description": "AI领域核心技术和架构相关关键词",

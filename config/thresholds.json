@@ -65,7 +65,9 @@
     "academic_min_count": 1,
     "academic_max_count": 3,
     "media_min_count": 2,
-    "latest_count": 3
+    "latest_count": 3,
+    "new_model_extra_count": 3,
+    "new_model_hours": 48
   },
 
   "scoring": {

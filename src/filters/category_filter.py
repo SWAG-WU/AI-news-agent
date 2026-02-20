@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.config import Config
+from src.filters.new_model_filter import NewModelReleaseFilter
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,10 @@ class CategoryFilter:
     DEFAULT_ACADEMIC_MAX_COUNT = 3  # 最多学术类数量
     DEFAULT_MEDIA_MIN_COUNT = 2  # 最少媒体类数量
     DEFAULT_LATEST_COUNT = 3  # 最新资讯数量（按时间排序）
+
+    # 新模型发布额外配置
+    DEFAULT_NEW_MODEL_EXTRA_COUNT = 3  # 新模型发布最大额外数量
+    DEFAULT_NEW_MODEL_HOURS = 48  # 检测新模型发布的时间窗口（小时）
 
     # 填补优先级（当学术/媒体不足时，按此顺序填补）
     FALLBACK_PRIORITY = [
@@ -120,6 +125,8 @@ class CategoryFilter:
         self.academic_max_count = self.DEFAULT_ACADEMIC_MAX_COUNT
         self.media_min_count = self.DEFAULT_MEDIA_MIN_COUNT
         self.latest_count = self.DEFAULT_LATEST_COUNT
+        self.new_model_extra_count = self.DEFAULT_NEW_MODEL_EXTRA_COUNT
+        self.new_model_hours = self.DEFAULT_NEW_MODEL_HOURS
 
         if config and hasattr(config, 'thresholds') and hasattr(config.thresholds, 'category_filter'):
             cf_config = config.thresholds.category_filter
@@ -129,6 +136,11 @@ class CategoryFilter:
             self.academic_max_count = getattr(cf_config, 'academic_max_count', self.DEFAULT_ACADEMIC_MAX_COUNT)
             self.media_min_count = getattr(cf_config, 'media_min_count', self.DEFAULT_MEDIA_MIN_COUNT)
             self.latest_count = getattr(cf_config, 'latest_count', self.DEFAULT_LATEST_COUNT)
+            self.new_model_extra_count = getattr(cf_config, 'new_model_extra_count', self.DEFAULT_NEW_MODEL_EXTRA_COUNT)
+            self.new_model_hours = getattr(cf_config, 'new_model_hours', self.DEFAULT_NEW_MODEL_HOURS)
+
+        # 初始化新模型发布过滤器
+        self.new_model_filter = NewModelReleaseFilter(config)
 
     def classify(self, articles: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         """
@@ -316,11 +328,37 @@ class CategoryFilter:
         # ========== 第6步：最终保证输出数量固定为 10 条 ==========
         result = result[:self.max_target_count]
 
+        # ========== 第7步：检测新模型发布，额外添加（不占用10条名额）==========
+        new_model_articles = []
+        all_articles_for_detection = articles + (result if self.storage else [])
+
+        # 从未选中的文章中检测新模型发布
+        selected_urls = set(a.get('url', '') for a in result)
+        unsampled_articles = [a for a in articles if a.get('url', '') not in selected_urls]
+
+        if unsampled_articles:
+            new_model_articles = self.new_model_filter.filter_new_model_releases(
+                unsampled_articles,
+                max_extra=self.new_model_extra_count,
+                hours=self.new_model_hours
+            )
+
+        # 将新模型发布资讯添加到结果中（作为额外资讯）
+        final_result = result.copy()
+        if new_model_articles:
+            for article in new_model_articles:
+                article['is_extra'] = True  # 标记为额外资讯
+                article['extra_type'] = 'new_model_release'
+            final_result.extend(new_model_articles)
+            logger.info(f"CategoryFilter: 额外添加 {len(new_model_articles)} 条新模型发布资讯")
+
         # 输出统计
         stats = self.get_stats(result)
-        logger.info(f"CategoryFilter: 输出 {len(result)} 条 - {stats}")
+        logger.info(f"CategoryFilter: 常规输出 {len(result)} 条 - {stats}")
+        if new_model_articles:
+            logger.info(f"CategoryFilter: 额外输出 {len(new_model_articles)} 条新模型发布资讯")
 
-        return result
+        return final_result
 
     def _sort_articles_by_recency_only(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """

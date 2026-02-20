@@ -84,11 +84,23 @@ class FeishuFormatter:
             logger.warning(f"资讯数量不足 ({len(articles)} < {min_items})，使用回退格式")
             return self._format_fallback(articles)
 
+        # 分离常规资讯和额外资讯（新模型发布等）
+        regular_articles = []
+        extra_articles = []
+
+        for article in articles:
+            if article.get('is_extra', False):
+                extra_articles.append(article)
+            else:
+                regular_articles.append(article)
+
+        logger.info(f"常规资讯: {len(regular_articles)} 条, 额外资讯: {len(extra_articles)} 条")
+
         # 按分类整理资讯
-        categorized = self._categorize_articles(articles)
+        categorized = self._categorize_articles(regular_articles)
 
         # 生成日报
-        report = self._generate_report(categorized)
+        report = self._generate_report(categorized, extra_articles)
 
         logger.info("日报格式化完成")
         return report
@@ -173,7 +185,7 @@ class FeishuFormatter:
         else:
             return "media"
 
-    def _generate_report(self, categorized: Dict[str, List[Dict[str, Any]]]) -> str:
+    def _generate_report(self, categorized: Dict[str, List[Dict[str, Any]]], extra_articles: List[Dict[str, Any]] = None) -> str:
         """生成日报文本"""
         lines = []
 
@@ -184,9 +196,52 @@ class FeishuFormatter:
 
         # 统计信息
         total_count = sum(len(articles) for articles in categorized.values())
-        lines.append(f"📊 今日共收录 {total_count} 条资讯")
+        extra_count = len(extra_articles) if extra_articles else 0
+        lines.append(f"📊 今日共收录 {total_count} 条资讯" + (f" + {extra_count} 条特别资讯" if extra_count > 0 else ""))
         lines.append("")
 
+        # ========== 新模型发布特别资讯（如果有）==========
+        if extra_articles and extra_count > 0:
+            lines.append("## 🚀 特别关注：新模型发布")
+            lines.append("")
+
+            # 按新模型类型分组
+            new_model_articles = [a for a in extra_articles if a.get('extra_type') == 'new_model_release']
+
+            if new_model_articles:
+                lines.append("*检测到重要模型发布，突破常规资讯限制*")
+                lines.append("")
+
+                for article in new_model_articles:
+                    model_info = article.get('model_info', {})
+                    model_name = model_info.get('model_name', '新模型')
+                    company = model_info.get('company', '')
+
+                    title = article.get("title", "").strip()
+                    summary = article.get("summary", article.get("description", "")).strip()
+                    url = article.get("url", "")
+                    source = article.get("source", "")
+                    published_at = article.get("published_at", "")
+
+                    # 格式化时间
+                    formatted_time = self._format_published_time(published_at)
+
+                    # 格式化新模型发布资讯
+                    lines.append(f"### {model_name}")
+                    if company:
+                        lines.append(f"*{company}*")
+                    if formatted_time:
+                        lines.append(f"*🕒 {formatted_time}*")
+                    lines.append("")
+                    lines.append(summary[:300])
+                    if url:
+                        lines.append(f"[查看详情]({url})")
+                    lines.append("")
+
+            lines.append("---")
+            lines.append("")
+
+        # ========== 常规资讯 ==========
         # 按分类优先级顺序生成内容
         category_order = ["academic", "lab_blog", "media", "tools", "community", "newsletter"]
 

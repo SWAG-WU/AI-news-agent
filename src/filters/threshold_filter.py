@@ -279,16 +279,17 @@ class ThresholdFilter:
         """检查GitHub项目阈值"""
         thresholds = self.thresholds.github
 
-        # 检查星标数
-        if thresholds.stars:
-            min_stars = thresholds.stars.get("min_stars", 0)
+        # 检查星标数（处理 None 值）
+        stars_config = thresholds.stars or {}
+        if stars_config:
+            min_stars = stars_config.get("min_stars", 0)
             stars = article.get("stars", 0)
             if stars < min_stars:
                 return False
 
-        # 检查今日星标
-        if thresholds.stars:
-            min_today = thresholds.stars.get("min_stars_daily", 0)
+        # 检查今日星标（处理 None 值）
+        if stars_config:
+            min_today = stars_config.get("min_stars_daily", 0)
             today_stars = article.get("today_stars", 0)
             if today_stars < min_today:
                 return False
