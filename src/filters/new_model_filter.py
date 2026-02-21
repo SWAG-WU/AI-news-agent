@@ -9,7 +9,7 @@
 import logging
 import re
 from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.config import Config
 
@@ -101,7 +101,7 @@ class NewModelReleaseFilter:
 
         if not has_model_name:
             # 如果没有模型名称，但有发布关键词，检查是否来自AI实验室
-            source = article.get('source', '').lower()
+            source = (article.get('source') or '').lower()
             is_from_ai_lab = any(lab in source for lab in self.AI_LABS)
             return is_from_ai_lab
 
@@ -181,7 +181,7 @@ class NewModelReleaseFilter:
         Returns:
             新模型发布资讯列表
         """
-        cutoff_time = datetime.now() - timedelta(hours=hours)
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
 
         new_model_articles = []
 
@@ -221,26 +221,33 @@ class NewModelReleaseFilter:
         return new_model_articles
 
     def _extract_published_at(self, article: Dict[str, Any]) -> Optional[datetime]:
-        """提取发布时间"""
+        """提取发布时间，确保返回带时区的 datetime"""
         published_at = article.get("published_at")
         if not published_at:
             return None
 
         if isinstance(published_at, datetime):
+            # 如果已有 datetime，确保带有时区信息
+            if published_at.tzinfo is None:
+                return published_at.replace(tzinfo=timezone.utc)
             return published_at
 
         if isinstance(published_at, str):
+            # 定义格式及其对应的时区处理
             formats = (
-                "%Y-%m-%d %H:%M:%S",
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M:%SZ",
-                "%Y-%m-%d",
-                "%a, %d %b %Y %H:%M:%S %z",
-                "%a, %d %b %Y %H:%M:%S GMT",
+                ("%Y-%m-%d %H:%M:%S", True),  # naive, assume UTC
+                ("%Y-%m-%dT%H:%M:%S", True),  # naive, assume UTC
+                ("%Y-%m-%dT%H:%M:%SZ", True),  # Z indicates UTC
+                ("%Y-%m-%d", True),  # naive, assume UTC
+                ("%a, %d %b %Y %H:%M:%S %z", False),  # has timezone
+                ("%a, %d %b %Y %H:%M:%S GMT", True),  # GMT = UTC
             )
-            for fmt in formats:
+            for fmt, assume_utc in formats:
                 try:
-                    return datetime.strptime(published_at, fmt)
+                    dt = datetime.strptime(published_at, fmt)
+                    if assume_utc and dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    return dt
                 except ValueError:
                     continue
 
