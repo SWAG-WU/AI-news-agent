@@ -514,40 +514,162 @@ class FeishuCardFormatter(FeishuFormatter):
     """
     飞书卡片格式化器
 
-    生成飞书卡片消息格式（更美观，需要额外配置）。
+    生成结构化飞书卡片消息，使用多元素布局替代纯文本 Markdown。
     """
+
+    _LINK_LABELS = {
+        "academic": "查看论文",
+        "lab_blog": "阅读原文",
+        "media": "阅读全文",
+        "tools": "查看产品",
+        "community": "参与讨论",
+        "newsletter": "阅读原文",
+        "extra": "查看详情",
+    }
 
     async def format(self, articles: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
-        格式化为飞书卡片格式
+        格式化为飞书结构化卡片
 
         Returns:
             飞书卡片消息字典
         """
-        # 先生成Markdown
-        markdown = await super().format(articles)
+        date_str = datetime.now().strftime("%Y年%m月%d日")
+        min_items = self.config.thresholds.daily_output.min_total_items
 
-        # 转换为卡片格式
-        card = {
+        if len(articles) < min_items:
+            return self._build_fallback_card(articles, date_str)
+
+        regular_articles = [a for a in articles if not a.get("is_extra", False)]
+        extra_articles = [a for a in articles if a.get("is_extra", False)]
+        categorized = self._categorize_articles(regular_articles)
+
+        total_count = sum(len(v) for v in categorized.values())
+        extra_count = len(extra_articles)
+
+        elements = []
+
+        # 统计摘要行
+        summary_text = f"📊 今日共收录 **{total_count}** 条资讯"
+        if extra_count > 0:
+            summary_text += f" + **{extra_count}** 条特别资讯"
+        elements.append({"tag": "div", "text": {"tag": "lark_md", "content": summary_text}})
+
+        # 新模型发布特别资讯
+        if extra_articles:
+            elements.append({"tag": "hr"})
+            elements.append({
+                "tag": "div",
+                "text": {"tag": "lark_md", "content": "**🚀 特别关注：新模型发布**\n*检测到重要模型发布，突破常规资讯限制*"}
+            })
+            for article in extra_articles:
+                elements.append({"tag": "div", "text": {"tag": "lark_md", "content": self._article_to_lark_md(article, "extra")}})
+
+        # 常规分类
+        category_order = ["academic", "lab_blog", "media", "tools", "community", "newsletter"]
+        for cat_key in category_order:
+            arts = categorized.get(cat_key, [])
+            if not arts:
+                continue
+            max_items = self.config.thresholds.daily_output.max_items_per_category.get(cat_key, 10)
+            label = self.category_map.get(cat_key, cat_key)
+
+            elements.append({"tag": "hr"})
+            elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"**{label}**"}})
+            for article in arts[:max_items]:
+                elements.append({"tag": "div", "text": {"tag": "lark_md", "content": self._article_to_lark_md(article, cat_key)}})
+
+        # 页脚
+        elements.append({"tag": "hr"})
+        elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"✅ 数据截至 {date_str} | 来源：arXiv / 官方博客 / 专业媒体 / 社区等"}})
+
+        return {
             "msg_type": "interactive",
             "card": {
                 "header": {
-                    "title": {
-                        "tag": "plain_text",
-                        "content": "AI前沿日报"
-                    },
-                    "template": "orange"
+                    "title": {"tag": "plain_text", "content": f"📡 AI前沿日报 | {date_str}"},
+                    "template": "blue"
                 },
-                "elements": [
-                    {
-                        "tag": "div",
-                        "text": {
-                            "tag": "lark_md",
-                            "content": markdown
-                        }
-                    }
-                ]
+                "elements": elements
             }
         }
 
-        return card
+    def _article_to_lark_md(self, article: Dict[str, Any], category: str) -> str:
+        """将文章转换为 lark_md 格式字符串"""
+        title = article.get("title", "").strip()
+        summary = article.get("summary", article.get("description", "")).strip()
+        url = article.get("url", "")
+        source = article.get("source", "")
+        author = article.get("author", "")
+        institution = article.get("institution", "")
+        published_at = article.get("published_at", "")
+        formatted_time = self._format_published_time(published_at)
+
+        lines = [f"**{title}**"]
+
+        # 元信息行
+        meta_parts = []
+        if category == "academic":
+            if author:
+                meta_parts.append(f"作者: {author}")
+            if institution:
+                meta_parts.append(f"机构: {institution}")
+        elif category == "extra":
+            model_info = article.get("model_info", {})
+            company = model_info.get("company", "")
+            if company:
+                meta_parts.append(company)
+        else:
+            if source:
+                meta_parts.append(f"来源: {source}")
+        if formatted_time:
+            meta_parts.append(f"🕒 {formatted_time}")
+
+        if meta_parts:
+            lines.append("*" + " | ".join(meta_parts) + "*")
+
+        if summary:
+            lines.append(summary[:300])
+
+        if url:
+            label = self._LINK_LABELS.get(category, "查看详情")
+            lines.append(f"[{label}]({url})")
+
+        return "\n".join(lines)
+
+    def _build_fallback_card(self, articles: List[Dict[str, Any]], date_str: str) -> Dict[str, Any]:
+        """资讯不足时的回退卡片"""
+        elements = []
+
+        if not articles:
+            elements.append({"tag": "div", "text": {"tag": "lark_md", "content": "🟡 当前时段暂无重大AI更新。\n\n建议持续关注 arXiv CS.AI 与 HuggingFace 新动向。"}})
+        else:
+            elements.append({"tag": "div", "text": {"tag": "lark_md", "content": "🟡 当前时段重大更新较少，以下是为您整理的资讯："}})
+            for article in articles:
+                title = article.get("title", "")
+                summary = article.get("summary", article.get("description", ""))
+                url = article.get("url", "")
+                source = article.get("source", "")
+
+                lines = [f"**{title}**"]
+                if summary:
+                    lines.append(summary[:200])
+                if source:
+                    lines.append(f"*来源: {source}*")
+                if url:
+                    lines.append(f"[查看详情]({url})")
+                elements.append({"tag": "div", "text": {"tag": "lark_md", "content": "\n".join(lines)}})
+
+        elements.append({"tag": "hr"})
+        elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"✅ 数据截至 {date_str} | 来源：arXiv / 官方博客 / 专业媒体 / 社区等"}})
+
+        return {
+            "msg_type": "interactive",
+            "card": {
+                "header": {
+                    "title": {"tag": "plain_text", "content": f"📡 AI前沿日报 | {date_str}"},
+                    "template": "blue"
+                },
+                "elements": elements
+            }
+        }

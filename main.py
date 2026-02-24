@@ -25,7 +25,7 @@ from src.filters.deduplicator import Deduplicator
 from src.filters.keyword_filter import KeywordFilter
 from src.filters.threshold_filter import ThresholdFilter
 from src.filters.category_filter import CategoryFilter
-from src.formatter import FeishuFormatter
+from src.formatter import FeishuCardFormatter
 from src.sender import create_sender
 
 # 配置日志
@@ -66,7 +66,7 @@ class AINewsAgent:
         # 测试模式使用模拟摘要生成器
         use_mock = self.config.is_test_mode()
         self.summarizer = create_summarizer(self.config, mock=use_mock)
-        self.formatter = FeishuFormatter(self.config)
+        self.formatter = FeishuCardFormatter(self.config)
         self.sender = create_sender(self.config)
 
     def _create_collectors(self):
@@ -201,19 +201,24 @@ class AINewsAgent:
         logger.info(f"  生成 {len(summarized)} 条摘要")
         return summarized
 
-    async def _format_report(self, news: list) -> str:
+    async def _format_report(self, news: list):
         """格式化日报"""
         logger.info("Step 5: 格式化日报...")
         report = await self.formatter.format(news)
         # 显示预览
-        preview = report[:200] + "..." if len(report) > 200 else report
-        logger.info(f"  日报预览:\n{preview}")
+        if isinstance(report, dict):
+            elem_count = len(report.get("card", {}).get("elements", []))
+            logger.info(f"  日报预览: [卡片消息] 共 {elem_count} 个元素")
+        else:
+            preview = report[:200] + "..." if len(report) > 200 else report
+            logger.info(f"  日报预览:\n{preview}")
         return report
 
-    async def _send_report(self, report: str, news: list = None):
+    async def _send_report(self, report, news: list = None):
         """推送日报"""
         logger.info("Step 6: 推送日报...")
-        result = await self.sender.send(report)
+        msg_type = "interactive" if isinstance(report, dict) else "text"
+        result = await self.sender.send(report, msg_type)
         if result.get("success"):
             logger.info("  推送成功")
             # 标记文章为已发送
