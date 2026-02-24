@@ -277,10 +277,10 @@ async def main(once: bool = False):
     # 创建调度器
     scheduler = AsyncIOScheduler(timezone=timezone)
 
-    # 添加定时任务：每天9点执行
+    # 添加定时任务：每天6点执行
     scheduler.add_job(
         run_agent_job,
-        CronTrigger(hour=9, minute=0),
+        CronTrigger(hour=6, minute=0),
         id='daily_news_collection',
         name='AI资讯每日收集',
         replace_existing=True
