@@ -125,7 +125,8 @@ class SQLiteStorage:
     @staticmethod
     def compute_content_hash(title: str, description: str = "") -> str:
         """计算内容的SHA256哈希（用于相似内容检测）"""
-        content = f"{title}|{description}"
+        content = f"{title}|{description}".lower().strip()
+        content = " ".join(content.split())  # 移除多余空格，与 Deduplicator 保持一致
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
     # ==================== 添加文章 ====================

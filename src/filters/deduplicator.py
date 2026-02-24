@@ -52,13 +52,13 @@ class Deduplicator:
         logger.info(f"开始去重，原始文章数: {len(articles)}")
 
         # 批量预检查数据库中的重复内容
-        existing_urls = set()
+        existing_url_hashes = set()
         existing_hashes = set()
 
         if self.storage:
-            # 批量查询已存在的URL
+            # 批量查询已存在的URL（返回的是 url_hash 集合）
             urls = [a.get("url", "") for a in articles if a.get("url")]
-            existing_urls = await self._batch_check_urls(urls)
+            existing_url_hashes = await self._batch_check_urls(urls)
 
             # 批量查询已存在的内容哈希
             hashes = [self._compute_content_hash(a.get("title", ""), a.get("description", ""))
@@ -73,6 +73,8 @@ class Deduplicator:
             try:
                 url = article.get("url", "")
                 content_hash = self._compute_content_hash(article.get("title", ""), article.get("description", ""))
+                # 计算 url_hash 用于与数据库结果对比
+                url_hash = self.storage.compute_url_hash(url) if self.storage and url else ""
 
                 # 检查是否重复（先检查缓存，再检查预加载的数据库结果）
                 is_duplicate = False
@@ -80,8 +82,8 @@ class Deduplicator:
                 # 检查当前批次缓存
                 if url in self._seen_urls or content_hash in self._seen_content_hashes:
                     is_duplicate = True
-                # 检查数据库预加载结果
-                elif url in existing_urls or content_hash in existing_hashes:
+                # 检查数据库预加载结果（用 url_hash 对比，类型一致）
+                elif (url_hash and url_hash in existing_url_hashes) or content_hash in existing_hashes:
                     is_duplicate = True
 
                 if is_duplicate:
