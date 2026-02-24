@@ -90,7 +90,7 @@ class ThresholdFilter:
             return False
 
         # 4. 根据来源检查特定阈值
-        source = article.get("source", "")
+        source = article.get("source") or ""
 
         if "arXiv" in source:
             return self._meets_arxiv_thresholds(article)
