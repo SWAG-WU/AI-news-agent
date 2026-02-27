@@ -94,8 +94,8 @@ class FunGithubFilter:
         # 按分数排序，选择最好的项目
         fun_projects.sort(key=lambda x: x.get('score', 0), reverse=True)
 
-        # 返回最多1个项目
-        return fun_projects[:1]
+        # 返回最多2个有趣的项目
+        return fun_projects[:2]
 
     def _is_github_project(self, article: Dict[str, Any]) -> bool:
         """检查是否为GitHub项目"""
