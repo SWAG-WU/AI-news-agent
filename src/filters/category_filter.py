@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from src.config import Config
 from src.filters.new_model_filter import NewModelReleaseFilter
+from src.filters.fun_github_filter import FunGithubFilter
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +142,9 @@ class CategoryFilter:
 
         # 初始化新模型发布过滤器
         self.new_model_filter = NewModelReleaseFilter(config)
+
+        # 初始化有趣GitHub项目过滤器
+        self.fun_github_filter = FunGithubFilter(config)
 
     def classify(self, articles: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         """
@@ -352,11 +356,33 @@ class CategoryFilter:
             final_result.extend(new_model_articles)
             logger.info(f"CategoryFilter: 额外添加 {len(new_model_articles)} 条新模型发布资讯")
 
+        # ========== 第8步：检测有趣GitHub项目，额外添加（不占用10条名额）==========
+        fun_github_articles = []
+
+        # 从未选中的文章中检测有趣GitHub项目
+        selected_urls = set(a.get('url', '') for a in final_result)
+        unsampled_articles = [a for a in articles if a.get('url', '') not in selected_urls]
+
+        if unsampled_articles:
+            fun_github_articles = self.fun_github_filter.filter_fun_github_projects(
+                unsampled_articles
+            )
+
+        # 将有趣GitHub项目添加到结果中（作为额外资讯）
+        if fun_github_articles:
+            for article in fun_github_articles:
+                article['is_extra'] = True  # 标记为额外资讯
+                article['extra_type'] = 'fun_github_project'
+            final_result.extend(fun_github_articles)
+            logger.info(f"CategoryFilter: 额外添加 {len(fun_github_articles)} 条有趣GitHub项目")
+
         # 输出统计
         stats = self.get_stats(result)
         logger.info(f"CategoryFilter: 常规输出 {len(result)} 条 - {stats}")
         if new_model_articles:
             logger.info(f"CategoryFilter: 额外输出 {len(new_model_articles)} 条新模型发布资讯")
+        if fun_github_articles:
+            logger.info(f"CategoryFilter: 额外输出 {len(fun_github_articles)} 条有趣GitHub项目")
 
         return final_result
 

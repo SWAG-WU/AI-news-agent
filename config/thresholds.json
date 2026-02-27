@@ -58,7 +58,7 @@
   },
 
   "category_filter": {
-    "description": "按类型分类和过滤配置 - 每天固定10条",
+    "description": "按类型分类和过滤配置 - 每天固定10条 + 额外项目",
     "enabled": true,
     "min_target_count": 10,
     "max_target_count": 10,
@@ -67,7 +67,8 @@
     "media_min_count": 2,
     "latest_count": 3,
     "new_model_extra_count": 3,
-    "new_model_hours": 48
+    "new_model_hours": 48,
+    "fun_github_extra_count": 1
   },
 
   "scoring": {
