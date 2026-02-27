@@ -120,11 +120,18 @@ class SQLiteStorage:
     @staticmethod
     def compute_url_hash(url: str) -> str:
         """计算URL的SHA256哈希"""
+        if url is None:
+            url = ""
         return hashlib.sha256(url.encode("utf-8")).hexdigest()
 
     @staticmethod
     def compute_content_hash(title: str, description: str = "") -> str:
         """计算内容的SHA256哈希（用于相似内容检测）"""
+        # 处理 None 值
+        if title is None:
+            title = ""
+        if description is None:
+            description = ""
         content = f"{title}|{description}".lower().strip()
         content = " ".join(content.split())  # 移除多余空格，与 Deduplicator 保持一致
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
@@ -247,7 +254,8 @@ class SQLiteStorage:
         """标记文章已发送"""
         session = self.get_session()
         try:
-            article = session.query(Article).filter_by(url=url).first()
+            url_hash = self.compute_url_hash(url)
+            article = session.query(Article).filter_by(url_hash=url_hash).first()
             if article:
                 article.is_sent = True
                 article.sent_at = datetime.now()
@@ -269,7 +277,8 @@ class SQLiteStorage:
         """更新文章摘要"""
         session = self.get_session()
         try:
-            article = session.query(Article).filter_by(url=url).first()
+            url_hash = self.compute_url_hash(url)
+            article = session.query(Article).filter_by(url_hash=url_hash).first()
             if article:
                 article.summary = summary
                 session.commit()
@@ -282,7 +291,8 @@ class SQLiteStorage:
         """更新文章评分"""
         session = self.get_session()
         try:
-            article = session.query(Article).filter_by(url=url).first()
+            url_hash = self.compute_url_hash(url)
+            article = session.query(Article).filter_by(url_hash=url_hash).first()
             if article:
                 article.score = score
                 session.commit()

@@ -184,7 +184,11 @@ class ThresholdFilter:
         if keywords is None:
             keywords = []
 
-        matches = sum(1 for kw in keywords if kw.lower() in text)
+        # 确保 keywords 是一个列表，而不是 None 或其他类型
+        if not isinstance(keywords, list):
+            keywords = list(keywords) if keywords else []
+
+        matches = sum(1 for kw in keywords if kw and kw.lower() in text)
         return min(matches * 0.1, 1.0)
 
     def _score_recency(self, article: Dict[str, Any]) -> float:

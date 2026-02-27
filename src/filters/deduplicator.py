@@ -240,6 +240,12 @@ class Deduplicator:
         """计算内容哈希"""
         import hashlib
 
+        # 处理 None 值
+        if title is None:
+            title = ""
+        if description is None:
+            description = ""
+
         # 标准化文本
         content = f"{title}|{description}".lower().strip()
         content = " ".join(content.split())  # 移除多余空格
