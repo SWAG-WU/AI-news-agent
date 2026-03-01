@@ -214,8 +214,18 @@ class FeishuSender:
 
         output_path = self.test_output_path.parent / filename
 
+        # 处理不同格式的内容
+        if isinstance(content, dict):
+            # 卡片格式，写入 JSON
+            filename = f"test_{timestamp}.json"
+            output_path = self.test_output_path.parent / filename
+            import json
+            content_str = json.dumps(content, ensure_ascii=False, indent=2)
+        else:
+            content_str = content
+
         with open(output_path, "w", encoding="utf-8") as f:
-            f.write(content)
+            f.write(content_str)
 
         logger.info(f"测试模式：内容已写入 {output_path}")
 

@@ -321,6 +321,75 @@ class FeishuFormatter:
         except Exception:
             return published_at
 
+    def _infer_source_from_url(self, url: str) -> str:
+        """根据 URL 推断来源平台"""
+        if not url:
+            return ""
+
+        url_lower = url.lower()
+
+        # GitHub
+        if "github.com" in url_lower or "github.io" in url_lower:
+            return "GitHub"
+
+        # OpenAI
+        if "openai.com" in url_lower:
+            return "OpenAI"
+
+        # Microsoft
+        if "microsoft.com" in url_lower or "microsoftresearch" in url_lower:
+            return "Microsoft"
+
+        # Google
+        if "google.com" in url_lower or "googleblog" in url_lower:
+            return "Google"
+
+        # Meta
+        if "meta.com" in url_lower or "fb.com" in url_lower:
+            return "Meta"
+
+        # Anthropic
+        if "anthropic.com" in url_lower:
+            return "Anthropic"
+
+        # arXiv
+        if "arxiv.org" in url_lower:
+            return "arXiv"
+
+        # Hugging Face
+        if "huggingface.co" in url_lower:
+            return "Hugging Face"
+
+        # MIT Technology Review
+        if "technologyreview.com" in url_lower:
+            return "MIT Tech Review"
+
+        # The Verge
+        if "theverge.com" in url_lower:
+            return "The Verge"
+
+        # Wired
+        if "wired.com" in url_lower:
+            return "Wired"
+
+        # Nature
+        if "nature.com" in url_lower:
+            return "Nature"
+
+        # Wired
+        if "wired.com" in url_lower:
+            return "Wired"
+
+        # 通用域名提取
+        import re
+        match = re.search(r'(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+)\.(?:com|org|io|net|ai)', url_lower)
+        if match:
+            domain = match.group(1)
+            # 简单首字母大写
+            return domain.capitalize()
+
+        return ""
+
     def _format_academic_article(self, title: str, summary: str,
                                 author: str, institution: str, url: str,
                                 formatted_time: str = "") -> str:
@@ -558,12 +627,15 @@ class FeishuCardFormatter(FeishuFormatter):
         # 新模型发布特别资讯
         if extra_articles:
             elements.append({"tag": "hr"})
+            # 使用引用样式突出特别资讯标题
             elements.append({
                 "tag": "div",
-                "text": {"tag": "lark_md", "content": "**🚀 特别关注：新模型发布**\n*检测到重要模型发布，突破常规资讯限制*"}
+                "text": {"tag": "lark_md", "content": "> 🚀 **特别关注：新模型发布**\n*> 检测到重要模型发布，突破常规资讯限制*"}
             })
-            for article in extra_articles:
+            for i, article in enumerate(extra_articles):
                 elements.append({"tag": "div", "text": {"tag": "lark_md", "content": self._article_to_lark_md(article, "extra")}})
+                if i < len(extra_articles) - 1:
+                    elements.append({"tag": "div", "text": {"tag": "lark_md", "content": "---"}})
 
         # 常规分类
         category_order = ["academic", "lab_blog", "media", "tools", "community", "newsletter"]
@@ -575,9 +647,13 @@ class FeishuCardFormatter(FeishuFormatter):
             label = self.category_map.get(cat_key, cat_key)
 
             elements.append({"tag": "hr"})
-            elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"**{label}**"}})
-            for article in arts[:max_items]:
+            # 使用引用样式突出分类标题，增强视觉层级
+            elements.append({"tag": "div", "text": {"tag": "lark_md", "content": f"> **{label}**"}})
+            for i, article in enumerate(arts[:max_items]):
                 elements.append({"tag": "div", "text": {"tag": "lark_md", "content": self._article_to_lark_md(article, cat_key)}})
+                # 非最后一条文章后添加分隔线
+                if i < len(arts[:max_items]) - 1:
+                    elements.append({"tag": "div", "text": {"tag": "lark_md", "content": "---"}})
 
         # 页脚
         elements.append({"tag": "hr"})
@@ -595,7 +671,7 @@ class FeishuCardFormatter(FeishuFormatter):
         }
 
     def _article_to_lark_md(self, article: Dict[str, Any], category: str) -> str:
-        """将文章转换为 lark_md 格式字符串"""
+        """将文章转换为 lark_md 格式字符串，增强视觉层级"""
         title = article.get("title", "").strip()
         summary = article.get("summary", article.get("description", "")).strip()
         url = article.get("url", "")
@@ -605,35 +681,52 @@ class FeishuCardFormatter(FeishuFormatter):
         published_at = article.get("published_at", "")
         formatted_time = self._format_published_time(published_at)
 
-        lines = [f"**{title}**"]
+        lines = [f"**▸ {title}**"]
 
         # 元信息行
         meta_parts = []
         if category == "academic":
             if author:
-                meta_parts.append(f"作者: {author}")
+                meta_parts.append(f"👤 {author}")
             if institution:
-                meta_parts.append(f"机构: {institution}")
+                meta_parts.append(f"🏛️ {institution}")
+            # 学术研究也显示来源平台
+            if source:
+                meta_parts.append(f"📢 {source}")
+            else:
+                inferred_source = self._infer_source_from_url(url)
+                if inferred_source:
+                    meta_parts.append(f"📢 {inferred_source}")
         elif category == "extra":
             model_info = article.get("model_info", {})
             company = model_info.get("company", "")
             if company:
-                meta_parts.append(company)
+                meta_parts.append(f"🏢 {company}")
+            # 根据 URL 推断来源
+            inferred_source = self._infer_source_from_url(url)
+            if inferred_source:
+                meta_parts.append(f"📢 {inferred_source}")
         else:
+            # 优先使用 source，如果为空则根据 URL 推断
             if source:
-                meta_parts.append(f"来源: {source}")
+                meta_parts.append(f"📢 {source}")
+            else:
+                # 根据 URL 推断来源平台
+                inferred_source = self._infer_source_from_url(url)
+                if inferred_source:
+                    meta_parts.append(f"📢 {inferred_source}")
         if formatted_time:
             meta_parts.append(f"🕒 {formatted_time}")
 
         if meta_parts:
-            lines.append("*" + " | ".join(meta_parts) + "*")
+            lines.append("`" + " │ ".join(meta_parts) + "`")
 
         if summary:
-            lines.append(summary[:300])
+            lines.append(f"> {summary[:280]}")
 
         if url:
             label = self._LINK_LABELS.get(category, "查看详情")
-            lines.append(f"[{label}]({url})")
+            lines.append(f"👉 [{label}]({url})")
 
         return "\n".join(lines)
 
