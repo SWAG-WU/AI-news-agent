@@ -137,6 +137,10 @@ class BaseCollector(ABC):
         Returns:
             响应内容文本，失败返回None
         """
+        # 确保会话已初始化
+        if self.session is None or self.session.closed:
+            await self._init_session()
+
         await self._check_rate_limit()
 
         default_headers = {

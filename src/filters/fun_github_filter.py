@@ -99,8 +99,12 @@ class FunGithubFilter:
 
     def _is_github_project(self, article: Dict[str, Any]) -> bool:
         """检查是否为GitHub项目"""
-        source = article.get('source', '').lower()
-        url = article.get('url', '').lower()
+        source = article.get('source') or ''
+        if source:
+            source = source.lower()
+        url = article.get('url') or ''
+        if url:
+            url = url.lower()
 
         # 检查是否来自GitHub
         return 'github' in source or 'github.com' in url

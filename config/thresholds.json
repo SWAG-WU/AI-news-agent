@@ -2,49 +2,43 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "筛选阈值配置",
   "description": "定义判断'重大更新'的各类阈值",
-
   "arxiv": {
     "min_citations": 10,
     "min_scites": 5,
     "check_arxiv_sanity": true,
     "min_sanity_score": 20
   },
-
   "github": {
     "trending": {
       "enabled": true,
       "check_trending": true,
-      "min_trending_rank": 50,
+      "min_trending_rank": 200,
       "since": "daily"
     },
     "stars": {
       "min_stars": 100,
-      "min_stars_daily": 20
+      "min_stars_daily": 0
     },
     "forks": {
-      "min_forks": 20
+      "min_forks": 0
     }
   },
-
   "huggingface": {
     "min_likes": 50,
     "min_downloads": 1000,
     "trending_check": true
   },
-
   "content": {
-    "min_title_length": 10,
+    "min_title_length": 1,
     "max_title_length": 200,
-    "min_description_length": 50,
+    "min_description_length": 1,
     "required_categories_count": 1
   },
-
   "time": {
     "primary_window_hours": 24,
     "secondary_window_hours": 48,
     "fallback_window_days": 7
   },
-
   "daily_output": {
     "max_items_per_category": {
       "highlights": 5,
@@ -56,7 +50,6 @@
     "min_total_items": 10,
     "fallback_min_total_items": 5
   },
-
   "category_filter": {
     "description": "按类型分类和过滤配置 - 每天固定10条 + 额外项目",
     "enabled": true,
@@ -68,21 +61,21 @@
     "latest_count": 3,
     "new_model_extra_count": 3,
     "new_model_hours": 48,
-    "fun_github_extra_count": 2
+    "fun_github_extra_count": 2,
+    "dual_channel_mode": false,
+    "tools_channel_count": 3,
+    "academic_media_channel_count": 10
   },
-
   "scoring": {
     "description": "资讯评分权重，总分高于此值视为'重大更新'",
     "weights": {
       "source_priority": 0.3,
-      "keyword_match": 0.3,
-      "recency": 0.2,
-      "engagement": 0.2
+      "keyword_match": 0.2,
+      "recency": 0.2
     },
-    "min_score": 0.6,
-    "high_score_threshold": 0.8
+    "min_score": 0.2,
+    "high_score_threshold": 0.5
   },
-
   "deduplication": {
     "enabled": true,
     "method": "all",
@@ -90,7 +83,6 @@
     "content_hash_algorithm": "sha256",
     "check_recent_days": 7
   },
-
   "retry": {
     "max_retries": 3,
     "retry_delay_seconds": 5,

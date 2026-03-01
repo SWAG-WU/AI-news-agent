@@ -139,25 +139,34 @@ class GithubCollector(BaseCollector):
         forks_elem = article.select_one("a[href$='/forks']")
         forks = self._parse_number(forks_elem.get_text(strip=True)) if forks_elem else 0
 
-        # 获取今日星标数
-        today_stars_elem = article.select_one("span[d='M12 6']")
+        # 获取今日星标数（如果有的话）
         today_stars = 0
-        if today_stars_elem:
-            parent = today_stars_elem.parent
+        # 查找包含小绿色三角形的span元素（代表star增长）
+        star_growth_elem = article.select_one("svg.octicon-arrow-small-down, svg.octicon-arrow-small-up, .hx_color-icon-success")
+        if star_growth_elem:
+            parent = star_growth_elem.parent
             if parent:
-                today_text = parent.get_text(strip=True)
-                today_stars = self._parse_number(today_text)
+                # 查找包含数值的文本
+                for child in parent.descendants:
+                    if hasattr(child, 'string') and child.string:
+                        text = child.string.strip()
+                        if text and any(c.isdigit() for c in text):
+                            today_stars = self._parse_number(text)
+                            break
 
-        # 获取fork数
-        forks_elem = article.select_one("a[href$='/forks']")
-        forks = self._parse_number(forks_elem.get_text(strip=True)) if forks_elem else 0
-
-        # 获取今日星标增长（如果有）
-        today_stars = 0
-        today_elem = article.select_one("span.d-inline-block")
-        if today_elem:
-            today_text = today_elem.get_text(strip=True)
-            today_stars = self._parse_number(today_text)
+        # 备选方案：寻找可能包含增量的其他元素
+        if today_stars == 0:
+            # 尝试查找包含"stars today"或类似文字的元素
+            all_spans = article.find_all(['span', 'div'])
+            for span_elem in all_spans:
+                span_text = span_elem.get_text(strip=True).lower()
+                if 'today' in span_text or 'stars' in span_text:
+                    # 提取数字
+                    import re
+                    numbers = re.findall(r'\d+', span_text)
+                    if numbers:
+                        today_stars = int(numbers[0])
+                        break
 
         return {
             "url": url,

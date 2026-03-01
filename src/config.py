@@ -298,6 +298,10 @@ class CategoryFilterConfig(BaseModel):
     max_target_count: int = 15
     academic_min_count: int = 1
     media_min_count: int = 2
+    fun_github_extra_count: int = 2
+    dual_channel_mode: bool = False  # 是否启用双渠道模式
+    tools_channel_count: int = 5     # tools渠道输出数量
+    academic_media_channel_count: int = 5  # 学术媒体渠道输出数量
 
 
 class DailyOutputThresholds(BaseModel):

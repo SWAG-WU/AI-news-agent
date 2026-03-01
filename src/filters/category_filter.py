@@ -128,6 +128,9 @@ class CategoryFilter:
         self.latest_count = self.DEFAULT_LATEST_COUNT
         self.new_model_extra_count = self.DEFAULT_NEW_MODEL_EXTRA_COUNT
         self.new_model_hours = self.DEFAULT_NEW_MODEL_HOURS
+        self.dual_channel_mode = False  # 双渠道模式开关
+        self.tools_channel_count = 5    # tools渠道输出数量
+        self.academic_media_channel_count = 5  # 学术媒体渠道输出数量
 
         if config and hasattr(config, 'thresholds') and hasattr(config.thresholds, 'category_filter'):
             cf_config = config.thresholds.category_filter
@@ -139,6 +142,9 @@ class CategoryFilter:
             self.latest_count = getattr(cf_config, 'latest_count', self.DEFAULT_LATEST_COUNT)
             self.new_model_extra_count = getattr(cf_config, 'new_model_extra_count', self.DEFAULT_NEW_MODEL_EXTRA_COUNT)
             self.new_model_hours = getattr(cf_config, 'new_model_hours', self.DEFAULT_NEW_MODEL_HOURS)
+            self.dual_channel_mode = getattr(cf_config, 'dual_channel_mode', False)
+            self.tools_channel_count = getattr(cf_config, 'tools_channel_count', 5)
+            self.academic_media_channel_count = getattr(cf_config, 'academic_media_channel_count', 5)
 
         # 初始化新模型发布过滤器
         self.new_model_filter = NewModelReleaseFilter(config)
@@ -167,6 +173,11 @@ class CategoryFilter:
 
         for article in articles:
             category = self._extract_category(article)
+
+            # 确保类别键存在，如果不存在则使用默认类别
+            if category not in categorized:
+                category = self.CATEGORY_MEDIA  # 默认归为媒体类
+
             categorized[category].append(article)
 
         return categorized
@@ -188,11 +199,25 @@ class CategoryFilter:
         """
         # 优先使用文章的 category 字段
         if 'category' in article and article['category']:
-            return article['category']
+            category = article['category']
+            # 确保类别是我们支持的类别之一
+            if category in [self.CATEGORY_ACADEMIC, self.CATEGORY_MEDIA, self.CATEGORY_LAB_BLOG,
+                           self.CATEGORY_TOOLS, self.CATEGORY_COMMUNITY, self.CATEGORY_NEWSLETTER]:
+                return category
+            else:
+                # 如果不是我们支持的类别，返回 None 以便使用其他方式判断
+                pass
 
         # 尝试使用 source_category 字段
         if 'source_category' in article and article['source_category']:
-            return article['source_category']
+            category = article['source_category']
+            # 确保类别是我们支持的类别之一
+            if category in [self.CATEGORY_ACADEMIC, self.CATEGORY_MEDIA, self.CATEGORY_LAB_BLOG,
+                           self.CATEGORY_TOOLS, self.CATEGORY_COMMUNITY, self.CATEGORY_NEWSLETTER]:
+                return category
+            else:
+                # 如果不是我们支持的类别，返回 None 以便使用其他方式判断
+                pass
 
         # 根据 source 名称映射
         source = article.get('source', '').lower()
@@ -218,17 +243,25 @@ class CategoryFilter:
         """
         为每日输出进行过滤，确保输出数量和类型满足要求
 
-        新规则（按优先级）：
-        1. 首先选择 3 条最新资讯（按发布时间排序，越靠近运行时间越好）
-        2. 从剩余资讯中选择 1-3 条学术类资讯
-        3. 其余用其他类型资讯填补至 10 条
-        4. 严格控制学术资讯不超过 3 条
+        支持两种模式：
+        1. 单渠道模式（默认）：混合输出不同类型的资讯
+        2. 双渠道模式：分别输出工具类和学术/媒体类资讯
+        """
+        if self.dual_channel_mode:
+            return self._filter_dual_channels(articles)
+        else:
+            return self._filter_single_channel(articles)
 
-        Args:
-            articles: 资讯列表
+    def _filter_single_channel(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        单渠道过滤（按照用户新需求）
 
-        Returns:
-            过滤后的资讯列表
+        新规则：
+        1. 固定学术类：2条
+        2. 固定工具类：3条
+        3. 固定实验室类：3条
+        4. 媒体类：填充至13-16条（如有特别资讯则相应增加）
+        5. 特别资讯：仅在有知名大模型发布时启用（额外添加，不影响总数基础）
         """
         categorized = self.classify(articles)
 
@@ -249,90 +282,130 @@ class CategoryFilter:
         result = []
         selected_urls = set()
 
-        # ========== 第1步：选择 3 条最新资讯（按时间优先） ==========
-        all_articles_by_time = self._sort_articles_by_recency_only(articles)
-        latest_articles = []
-        for article in all_articles_by_time:
-            if len(latest_articles) >= self.latest_count:
-                break
-            url = article.get('url', '')
-            if url and url not in selected_urls:
-                latest_articles.append(article)
-                selected_urls.add(url)
-
-        result.extend(latest_articles)
-        logger.info(f"  选择最新资讯: {len(latest_articles)} 条")
-
-        # ========== 第2步：从剩余资讯中选择 1-3 条学术类资讯 ==========
-        remaining_academic = [a for a in academic_articles if a.get('url', '') not in selected_urls]
-        if remaining_academic:
-            sorted_academic = self._sort_articles_by_recency_and_score(remaining_academic)
-            # 学术资讯数量控制在 1-3 条之间，根据可用数量动态调整
-            academic_to_select = min(self.academic_max_count, len(sorted_academic))
-            # 如果学术资讯足够多，至少选择 1 条
-            if academic_to_select >= 1:
-                academic_to_select = max(self.academic_min_count, academic_to_select)
-            selected_academic = sorted_academic[:academic_to_select]
+        # ========== 第1步：选择 2 条学术类资讯 ==========
+        if academic_articles:
+            sorted_academic = self._sort_articles_by_recency_and_score(academic_articles)
+            selected_academic = sorted_academic[:2]  # 固定选择2条，即使总数不够也选择全部
             result.extend(selected_academic)
             selected_urls.update(a.get('url', '') for a in selected_academic)
             logger.info(f"  选择学术类: {len(selected_academic)} 条")
         else:
-            logger.warning(f"  学术类文章不足 (0/{self.academic_min_count})")
+            # 如果没有学术类文章，从其他类别补充
+            logger.warning(f"  学术类文章不足 (0/2)")
+            # 从媒体、博客等类别中寻找可能的学术内容
+            potential_academic = []
+            all_remaining = [a for a in articles if a.get('url', '') not in selected_urls]
 
-        # ========== 第3步：计算还需填补的数量 ==========
-        target_count = self.min_target_count  # 固定 10 条
-        needed = target_count - len(result)
+            for article in all_remaining:
+                if len(potential_academic) >= 2:
+                    break
+                # 检查是否包含学术关键词
+                title = article.get('title', '').lower()
+                description = article.get('description', '').lower()
+                text = f"{title} {description}"
 
-        if needed > 0:
-            logger.info(f"  还需填补: {needed} 条")
+                academic_keywords = ['paper', 'research', 'study', 'science', 'scientific', 'academic',
+                                   'scholarly', 'conference', 'journal', 'thesis', 'dissertation',
+                                   'publication', 'experiment', 'methodology', 'analysis']
+                if any(keyword in text for keyword in academic_keywords):
+                    article_copy = article.copy()
+                    # 确保归类为学术类
+                    article_copy['category'] = self.CATEGORY_ACADEMIC
+                    potential_academic.append(article_copy)
+                    selected_urls.add(article.get('url', ''))
 
-            # ========== 第4步：按优先级填补剩余名额 ==========
-            # 收集所有剩余文章（排除学术类的上限控制）
-            remaining_pools = []
+            result.extend(potential_academic)
+            logger.info(f"  从其他类别补充学术类: {len(potential_academic)} 条")
 
-            # 媒体类剩余（排除已选中的）
+        # ========== 第2步：选择 3 条工具类资讯 ==========
+        if tools_articles:
+            sorted_tools = self._sort_articles_by_score(tools_articles)  # 按评分排序
+            selected_tools = sorted_tools[:3]  # 固定选择3条，即使总数不够也选择全部
+            result.extend(selected_tools)
+            selected_urls.update(a.get('url', '') for a in selected_tools)
+            logger.info(f"  选择工具类: {len(selected_tools)} 条")
+        else:
+            logger.warning(f"  工具类文章不足 (0/3)")
+
+        # ========== 第3步：选择 3 条实验室博客类资讯 ==========
+        if lab_blog_articles:
+            sorted_lab_blog = self._sort_articles_by_recency_and_score(lab_blog_articles)
+            selected_lab_blog = sorted_lab_blog[:3]  # 严格按照要求选择3条，不多选
+            result.extend(selected_lab_blog)
+            selected_urls.update(a.get('url', '') for a in selected_lab_blog)
+            logger.info(f"  选择实验室类: {len(selected_lab_blog)} 条")
+        else:
+            logger.warning(f"  实验室类文章不足 (0/3)")
+
+        # ========== 第4步：确保达到最低总数，优先选择媒体类 ==========
+        target_min_total = 13  # 最少13条
+        current_count = len(result)
+        needed = max(0, target_min_total - current_count)
+
+        # 优先填充媒体类
+        if media_articles and needed > 0:
             remaining_media = [a for a in media_articles if a.get('url', '') not in selected_urls]
             if remaining_media:
-                remaining_pools.append((self.CATEGORY_MEDIA, remaining_media))
+                sorted_media = self._sort_articles_by_recency_and_score(remaining_media)
+                selected_media = sorted_media[:min(needed, len(sorted_media))]
+                result.extend(selected_media)
+                selected_urls.update(a.get('url', '') for a in selected_media)
+                logger.info(f"  选择媒体类: {len(selected_media)} 条")
+                needed -= len(selected_media)
 
-            # 其他类别（按优先级）
-            remaining_pools.extend([
-                (self.CATEGORY_LAB_BLOG, [a for a in lab_blog_articles if a.get('url', '') not in selected_urls]),
-                (self.CATEGORY_TOOLS, [a for a in tools_articles if a.get('url', '') not in selected_urls]),
-                (self.CATEGORY_COMMUNITY, [a for a in community_articles if a.get('url', '') not in selected_urls]),
-                (self.CATEGORY_NEWSLETTER, [a for a in newsletter_articles if a.get('url', '') not in selected_urls]),
-            ])
+        # 如果仍有不足，从所有剩余文章中选择，优先选择媒体类
+        if needed > 0:
+            all_remaining = [a for a in articles if a.get('url', '') not in selected_urls]
+            if all_remaining:
+                # 先从媒体类剩余文章中选择
+                remaining_media = [a for a in all_remaining if self._extract_category(a) == self.CATEGORY_MEDIA]
+                if remaining_media:
+                    sorted_media = self._sort_articles_by_recency_and_score(remaining_media)
+                    media_to_add = sorted_media[:min(needed, len(sorted_media))]
+                    result.extend(media_to_add)
+                    selected_urls.update(a.get('url', '') for a in media_to_add)
+                    logger.info(f"  从其他媒体类补充: {len(media_to_add)} 条")
+                    needed -= len(media_to_add)
 
-            # 填补剩余名额
-            for category_name, pool in remaining_pools:
-                if needed <= 0:
-                    break
-                if pool:
-                    sorted_pool = self._sort_articles_by_recency_and_score(pool)
-                    selected = min(needed, len(sorted_pool))
-                    result.extend(sorted_pool[:selected])
-                    selected_urls.update(a.get('url', '') for a in sorted_pool[:selected])
-                    needed -= selected
-                    logger.info(f"  从 {category_name} 填补: {selected} 条")
+                # 如果仍不够，从所有剩余中选择
+                if needed > 0:
+                    all_remaining = [a for a in articles if a.get('url', '') not in selected_urls]
+                    if all_remaining:
+                        all_remaining_sorted = self._sort_articles_by_recency_and_score(all_remaining)
+                        additional_articles = all_remaining_sorted[:needed]
+                        result.extend(additional_articles)
+                        selected_urls.update(a.get('url', '') for a in additional_articles)
+                        logger.info(f"  补充其他类别: {len(additional_articles)} 条")
 
-        # ========== 第5步：如果仍然不足，从数据库获取未发送的历史文章补充 ==========
-        if needed > 0 and self.storage:
-            logger.info(f"CategoryFilter: 当前文章不足 {len(result)} 条，从数据库获取未发送的历史文章补充")
-            unsent_articles = self.storage.get_unsent(limit=needed)
+        # ========== 第5步：如果总数未达上限，可再填充至16条 ==========
+        current_count = len(result)
+        if current_count < 16:
+            additional_needed = 16 - current_count
+            all_remaining = [a for a in articles if a.get('url', '') not in selected_urls]
+            if all_remaining:
+                # 优先选择媒体类文章
+                remaining_media = [a for a in all_remaining if self._extract_category(a) == self.CATEGORY_MEDIA]
+                other_remaining = [a for a in all_remaining if self._extract_category(a) != self.CATEGORY_MEDIA]
 
-            for article in unsent_articles:
-                article_dict = article.to_dict()
-                article_dict.setdefault('description', '')
-                article_dict.setdefault('score', article.score or 0)
-                article_dict.setdefault('published_at', article.published_at)
-                result.append(article_dict)
+                additional_articles = []
+                # 优先选择媒体类
+                if remaining_media:
+                    sorted_media = self._sort_articles_by_recency_and_score(remaining_media)
+                    media_to_add = sorted_media[:additional_needed]
+                    additional_articles.extend(media_to_add)
+                    additional_needed -= len(media_to_add)
 
-            logger.info(f"CategoryFilter: 从数据库补充了 {len(unsent_articles)} 条未发送的历史文章")
+                # 剩余名额选择其他类
+                if additional_needed > 0 and other_remaining:
+                    all_other_sorted = self._sort_articles_by_recency_and_score(other_remaining)
+                    other_to_add = all_other_sorted[:additional_needed]
+                    additional_articles.extend(other_to_add)
 
-        # ========== 第6步：最终保证输出数量固定为 10 条 ==========
-        result = result[:self.max_target_count]
+                result.extend(additional_articles)
+                selected_urls.update(a.get('url', '') for a in additional_articles)
+                logger.info(f"  额外填充: {len(additional_articles)} 条 (总数增至{len(result)})")
 
-        # ========== 第7步：检测新模型发布，额外添加（不占用10条名额）==========
+        # ========== 第6步：检测新模型发布，额外添加（不占用基础名额）==========
         new_model_articles = []
         all_articles_for_detection = articles + (result if self.storage else [])
 
@@ -356,7 +429,111 @@ class CategoryFilter:
             final_result.extend(new_model_articles)
             logger.info(f"CategoryFilter: 额外添加 {len(new_model_articles)} 条新模型发布资讯")
 
-        # ========== 第8步：检测有趣GitHub项目，额外添加（不占用10条名额）==========
+        # ========== 第7步：检测有趣GitHub项目，额外添加（不占用基础名额）==========
+        fun_github_articles = []
+
+        # 从未选中的文章中检测有趣GitHub项目
+        selected_urls = set(a.get('url', '') for a in final_result)
+        unsampled_articles = [a for a in articles if a.get('url', '') not in selected_urls]
+
+        if unsampled_articles:
+            fun_github_articles = self.fun_github_filter.filter_fun_github_projects(
+                unsampled_articles
+            )
+
+        # 将有趣GitHub项目添加到结果中（作为额外资讯）
+        if fun_github_articles:
+            for article in fun_github_articles:
+                article['is_extra'] = True  # 标记为额外资讯
+                article['extra_type'] = 'fun_github_project'
+            final_result.extend(fun_github_articles)
+            logger.info(f"CategoryFilter: 额外添加 {len(fun_github_articles)} 条有趣GitHub项目")
+
+        # 输出统计
+        # 只统计常规输出
+        regular_result = [a for a in final_result if not a.get('is_extra', False)]
+        stats = self.get_stats(regular_result)
+        logger.info(f"CategoryFilter: 常规输出 {len(regular_result)} 条 - {stats}")
+        if new_model_articles:
+            logger.info(f"CategoryFilter: 额外输出 {len(new_model_articles)} 条新模型发布资讯")
+        if fun_github_articles:
+            logger.info(f"CategoryFilter: 额外输出 {len(fun_github_articles)} 条有趣GitHub项目")
+
+        return final_result
+
+    def _filter_dual_channels(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        双渠道过滤
+
+        渠道1：Tools渠道 - 专门筛选工具类（GitHub、Product Hunt等）资讯
+        渠道2：学术媒体渠道 - 专门筛选学术、媒体类资讯
+        """
+        categorized = self.classify(articles)
+
+        academic_articles = categorized[self.CATEGORY_ACADEMIC]
+        media_articles = categorized[self.CATEGORY_MEDIA]
+        tools_articles = categorized[self.CATEGORY_TOOLS]
+
+        logger.info(f"双渠道模式: 输入 {len(articles)} 条")
+        logger.info(f"  学术类: {len(academic_articles)}, 媒体类: {len(media_articles)}, 工具类: {len(tools_articles)}")
+
+        result = []
+        selected_urls = set()
+
+        # ====== 渠道1: Tools频道 (按评分排序，选择最佳的) ======
+        if tools_articles:
+            sorted_tools = self._sort_articles_by_score(tools_articles)  # 按评分排序
+            selected_tools = sorted_tools[:self.tools_channel_count]
+            result.extend(selected_tools)
+            selected_urls.update(a.get('url', '') for a in selected_tools)
+            logger.info(f"  Tools频道: {len(selected_tools)} 条")
+
+        # ====== 渠道2: 学术媒体频道 (优先学术，其次媒体) ======
+        # 先选择学术类资讯
+        remaining_academic = [a for a in academic_articles if a.get('url', '') not in selected_urls]
+        if remaining_academic:
+            sorted_academic = self._sort_articles_by_recency_and_score(remaining_academic)
+            selected_academic = sorted_academic[:self.academic_media_channel_count//2]
+            result.extend(selected_academic)
+            selected_urls.update(a.get('url', '') for a in selected_academic)
+            logger.info(f"  学术类: {len(selected_academic)} 条")
+
+        # 再选择媒体类资讯补充
+        remaining_media = [a for a in media_articles if a.get('url', '') not in selected_urls]
+        if remaining_media:
+            sorted_media = self._sort_articles_by_recency_and_score(remaining_media)
+            # 补充到学术媒体频道的总数
+            academic_selected = min(len(remaining_academic), self.academic_media_channel_count//2)
+            media_needed = min(self.academic_media_channel_count - academic_selected, len(sorted_media))
+            selected_media = sorted_media[:media_needed]
+            result.extend(selected_media)
+            selected_urls.update(a.get('url', '') for a in selected_media)
+            logger.info(f"  媒体类: {len(selected_media)} 条")
+
+        # ========== 第3步：检测新模型发布，额外添加（不占用主要名额）==========
+        new_model_articles = []
+
+        # 从未选中的文章中检测新模型发布
+        selected_urls = set(a.get('url', '') for a in result)
+        unsampled_articles = [a for a in articles if a.get('url', '') not in selected_urls]
+
+        if unsampled_articles:
+            new_model_articles = self.new_model_filter.filter_new_model_releases(
+                unsampled_articles,
+                max_extra=self.new_model_extra_count,
+                hours=self.new_model_hours
+            )
+
+        # 将新模型发布资讯添加到结果中（作为额外资讯）
+        final_result = result.copy()
+        if new_model_articles:
+            for article in new_model_articles:
+                article['is_extra'] = True  # 标记为额外资讯
+                article['extra_type'] = 'new_model_release'
+            final_result.extend(new_model_articles)
+            logger.info(f"CategoryFilter: 额外添加 {len(new_model_articles)} 条新模型发布资讯")
+
+        # ========== 第4步：检测有趣GitHub项目，额外添加（不占用主要名额）==========
         fun_github_articles = []
 
         # 从未选中的文章中检测有趣GitHub项目
@@ -378,13 +555,30 @@ class CategoryFilter:
 
         # 输出统计
         stats = self.get_stats(result)
-        logger.info(f"CategoryFilter: 常规输出 {len(result)} 条 - {stats}")
+        logger.info(f"CategoryFilter (双渠道): 常规输出 {len(result)} 条 - {stats}")
         if new_model_articles:
             logger.info(f"CategoryFilter: 额外输出 {len(new_model_articles)} 条新模型发布资讯")
         if fun_github_articles:
             logger.info(f"CategoryFilter: 额外输出 {len(fun_github_articles)} 条有趣GitHub项目")
 
         return final_result
+
+    def _sort_articles_by_score(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        按评分排序文章（仅考虑评分，不考虑时间）
+
+        Args:
+            articles: 文章列表
+
+        Returns:
+            按评分排序的文章列表（评分最高的在前）
+        """
+        def sort_key(article):
+            score = article.get('score', 0)
+            # 使用负分数让评分高的排在前面
+            return -score
+
+        return sorted(articles, key=sort_key, reverse=False)
 
     def _sort_articles_by_recency_only(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """

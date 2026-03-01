@@ -137,7 +137,7 @@ class ThresholdFilter:
 
     def _score_source_priority(self, article: Dict[str, Any]) -> float:
         """数据源优先级评分"""
-        source = article.get("source", "")
+        source = article.get("source", "") or ""
 
         # 根据数据源类型评分
         priority_map = {
@@ -157,7 +157,7 @@ class ThresholdFilter:
         }
 
         for key, value in priority_map.items():
-            if key in source:
+            if key in str(source):
                 return value
 
         return 0.5  # 默认分数
@@ -169,7 +169,7 @@ class ThresholdFilter:
         # 处理 None 值
         if matched is None:
             matched = []
-        if matched:
+        if matched and isinstance(matched, list):
             # 至少匹配一个分类给0.6分，每多一个增加0.1分
             return min(0.6 + len(matched) * 0.1, 1.0)
 
@@ -284,15 +284,15 @@ class ThresholdFilter:
         thresholds = self.thresholds.github
 
         # 检查星标数（处理 None 值）
-        stars_config = thresholds.stars or {}
-        if stars_config:
+        stars_config = thresholds.stars
+        if stars_config is not None and isinstance(stars_config, dict):
             min_stars = stars_config.get("min_stars", 0)
             stars = article.get("stars", 0)
             if stars < min_stars:
                 return False
 
         # 检查今日星标（处理 None 值）
-        if stars_config:
+        if stars_config is not None and isinstance(stars_config, dict):
             min_today = stars_config.get("min_stars_daily", 0)
             today_stars = article.get("today_stars", 0)
             if today_stars < min_today:
