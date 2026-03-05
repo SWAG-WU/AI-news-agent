@@ -20,6 +20,7 @@ import pytz
 
 from src.config import get_config
 from src.storage import SQLiteStorage
+from src.test_storage import TestStorage
 from src.summarizer import create_summarizer
 from src.filters.deduplicator import Deduplicator
 from src.filters.keyword_filter import KeywordFilter
@@ -52,7 +53,15 @@ class AINewsAgent:
 
     def __init__(self, config_dir: str = "config"):
         self.config = get_config(config_dir)
-        self.storage = SQLiteStorage("data/history.db")
+
+        # 测试模式使用临时数据库
+        if self.config.is_test_mode():
+            self.storage = TestStorage("agent_test")
+            self._test_storage_cleanup = True
+            logger.info("测试模式：使用临时数据库")
+        else:
+            self.storage = SQLiteStorage("data/history.db")
+            self._test_storage_cleanup = False
 
         # 创建组件
         self.collectors = self._create_collectors()
@@ -119,6 +128,11 @@ class AINewsAgent:
         except Exception as e:
             logger.error(f"Agent执行出错: {e}", exc_info=True)
             raise
+        finally:
+            # 测试模式下清理临时数据库
+            if self._test_storage_cleanup and hasattr(self.storage, 'cleanup'):
+                self.storage.cleanup()
+                logger.info("测试模式：已清理临时数据库")
 
     async def _collect_news(self) -> list:
         """从各个数据源采集资讯（并发执行）"""

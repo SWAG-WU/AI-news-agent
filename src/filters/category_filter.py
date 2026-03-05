@@ -258,10 +258,12 @@ class CategoryFilter:
 
         新规则：
         1. 固定学术类：2条
-        2. 固定工具类：3条
+        2. 固定工具类：3条（使用独立的工具类过滤规则）
         3. 固定实验室类：3条
         4. 媒体类：填充至13-16条（如有特别资讯则相应增加）
         5. 特别资讯：仅在有知名大模型发布时启用（额外添加，不影响总数基础）
+
+        工具类使用独立过滤规则，不影响学术/媒体类的筛选
         """
         categorized = self.classify(articles)
 
@@ -317,13 +319,14 @@ class CategoryFilter:
             result.extend(potential_academic)
             logger.info(f"  从其他类别补充学术类: {len(potential_academic)} 条")
 
-        # ========== 第2步：选择 3 条工具类资讯 ==========
+        # ========== 第2步：选择 3 条工具类资讯（使用独立过滤规则）==========
         if tools_articles:
-            sorted_tools = self._sort_articles_by_score(tools_articles)  # 按评分排序
-            selected_tools = sorted_tools[:3]  # 固定选择3条，即使总数不够也选择全部
+            # 工具类使用独立的过滤逻辑，不受其他类别影响
+            filtered_tools = self._filter_tools_independently(tools_articles)
+            selected_tools = filtered_tools[:3]  # 固定选择3条
             result.extend(selected_tools)
             selected_urls.update(a.get('url', '') for a in selected_tools)
-            logger.info(f"  选择工具类: {len(selected_tools)} 条")
+            logger.info(f"  选择工具类: {len(selected_tools)} 条（独立过滤）")
         else:
             logger.warning(f"  工具类文章不足 (0/3)")
 
@@ -579,6 +582,30 @@ class CategoryFilter:
             return -score
 
         return sorted(articles, key=sort_key, reverse=False)
+
+    def _filter_tools_independently(self, tools_articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        独立过滤工具类文章
+
+        工具类使用独立的过滤规则，不受学术/媒体类筛选的影响
+        主要按评分排序，选择高质量的工具项目
+
+        Args:
+            tools_articles: 工具类文章列表
+
+        Returns:
+            过滤后的工具类文章列表
+        """
+        if not tools_articles:
+            return []
+
+        # 按评分排序，选择高质量工具
+        sorted_tools = self._sort_articles_by_score(tools_articles)
+
+        # 可以在这里添加更多工具类特定的过滤逻辑
+        # 例如：GitHub stars阈值、特定关键词等
+
+        return sorted_tools
 
     def _sort_articles_by_recency_only(self, articles: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
