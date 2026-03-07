@@ -1,0 +1,281 @@
+{
+  "msg_type": "interactive",
+  "card": {
+    "header": {
+      "title": {
+        "tag": "plain_text",
+        "content": "📡 AI前沿日报 | 2026年03月01日"
+      },
+      "template": "blue"
+    },
+    "elements": [
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "📊 今日共收录 **16** 条资讯 + **2** 条特别资讯"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> 🚀 **特别关注：新模型发布**\n*> 检测到重要模型发布，突破常规资讯限制*"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ anthropics/claude-cookbooks**\n`📢 GitHub │ 🕒 2026-03-01T14:41:45.884932`\n> A collection of notebooks/recipes showcasing some fun and effective ways of using Claude。\n👉 [查看详情](https://github.com/anthropics/claude-cookbooks)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ dontriskit/awesome-ai-system-prompts**\n`📢 GitHub │ 🕒 2026-03-01T14:41:55.157318`\n> 🧠 Curated collection of system prompts for top AI tools。\n👉 [查看详情](https://github.com/dontriskit/awesome-ai-system-prompts)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🎓 学术研究**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Introducing ChatGPT Pulse**\n`🕒 Thu, 25 Sep 2025 00:00:00 GMT`\n> Today we're releasing a preview of ChatGPT Pulse to Pro users on mobile。\n👉 [查看论文](https://openai.com/index/introducing-chatgpt-pulse)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Early experiments in accelerating science with GPT-5**\n`🕒 Thu, 20 Nov 2025 00:00:00 GMT`\n> OpenAI introduces the first research cases showing how GPT-5 accelerates scientific progress across math, physics, biology, and computer science。\n👉 [查看论文](https://openai.com/index/accelerating-science-gpt-5)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🏢 实验室博客**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Introducing Edu for Countries**\n`📢 OpenAI │ 🕒 Wed, 21 Jan 2026 01:00:00 GMT`\n> Edu for Countries is a new OpenAI initiative helping governments use AI to modernize education systems and build future-ready workforces。\n👉 [阅读原文](https://openai.com/index/edu-for-countries)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ How countries can end the capability overhang**\n`📢 OpenAI │ 🕒 Wed, 21 Jan 2026 01:00:00 GMT`\n> Our latest report reveals stark differences in advanced AI adoption across countries and outlines new initiatives to help nations capture productivity gains from AI。\n👉 [阅读原文](https://openai.com/index/how-countries-can-end-the-capability-overhang)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ How Tolan builds voice-first AI with GPT-5.1**\n`📢 OpenAI │ 🕒 Wed, 07 Jan 2026 10:00:00 GMT`\n> Tolan built a voice-first AI companion with GPT-5。\n👉 [阅读原文](https://openai.com/index/tolan)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Horizon 1000: Advancing AI for primary healthcare**\n`📢 OpenAI │ 🕒 Tue, 20 Jan 2026 21:00:00 GMT`\n> OpenAI and the Gates Foundation launch Horizon 1000, a $50M pilot advancing AI capabilities for healthcare in Africa。\n👉 [阅读原文](https://openai.com/index/horizon-1000)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Multimodal reinforcement learning with agentic verifier for AI agents**\n`📢 Microsoft │ 🕒 Tue, 20 Jan 2026 17:00:00 +0000`\n> At a glance Today’s multimodal AI systems can give answers that sound right but may not be grounded in what they actually observe over time, leading to unpredictable errors and safety risks in real-world settings。\n👉 [阅读原文](https://www.microsoft.com/en-us/research/blog/multimodal-reinforcement-learning-with-agentic-verifier-for-ai-agents/)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Cisco and OpenAI redefine enterprise engineering with AI agents**\n`📢 OpenAI │ 🕒 Tue, 20 Jan 2026 11:00:00 GMT`\n> Cisco and OpenAI redefine enterprise engineering with Codex, an AI software agent embedded in workflows to speed builds, automate defect fixes, and enable AI-native development。\n👉 [阅读原文](https://openai.com/index/cisco)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Our approach to age prediction**\n`📢 OpenAI │ 🕒 Tue, 20 Jan 2026 00:00:00 GMT`\n> ChatGPT is rolling out age prediction to estimate if accounts are under or over 18, applying safeguards for teens and refining accuracy over time。\n👉 [阅读原文](https://openai.com/index/our-approach-to-age-prediction)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ OptiMind: A small language model with optimization expertise**\n`📢 Microsoft │ 🕒 Thu, 15 Jan 2026 14:00:00 +0000`\n> At a glance Many real-world business problems can benefit from optimization, but translating decisions, constraints, and goals from natural language into optimization algorithms is slow。\n👉 [阅读原文](https://www.microsoft.com/en-us/research/blog/optimind-a-small-language-model-with-optimization-expertise/)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Strengthening the U.S. AI supply chain through domestic manufacturing**\n`📢 OpenAI │ 🕒 Thu, 15 Jan 2026 00:00:00 GMT`\n> OpenAI launches a new RFP to strengthen the U。\n👉 [阅读原文](https://openai.com/index/strengthening-the-us-ai-supply-chain)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ OpenAI’s Raising Concerns Policy**\n`📢 OpenAI │ 🕒 Mon, 12 Jan 2026 00:00:00 GMT`\n> We’re publishing our Raising Concerns Policy, which protects employees’ rights to make protected disclosures。\n👉 [阅读原文](https://openai.com/index/openai-raising-concerns-policy)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🛠️ 工具产品**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ 78/xiaozhi-esp32**\n`📢 GitHub │ 🕒 2026-03-01T14:41:52.851907`\n> An MCP-based chatbot | 一个基于MCP的聊天机器人。\n👉 [查看产品](https://github.com/78/xiaozhi-esp32)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ PaddlePaddle/Paddle**\n`📢 GitHub │ 🕒 2026-03-01T14:41:52.850047`\n> PArallel Distributed Deep LEarning: Machine Learning Framework from Industrial Practice （『飞桨』核心框架，深度学习&机器学习高性能单机、分布式训练和跨平台部署）。\n👉 [查看产品](https://github.com/PaddlePaddle/Paddle)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ datawhalechina/happy-llm**\n`📢 GitHub │ 🕒 2026-03-01T14:41:45.900709`\n> 📚 从零开始的大语言模型原理与实践教程...\n👉 [查看产品](https://github.com/datawhalechina/happy-llm)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "✅ 数据截至 2026年03月01日 | 来源：arXiv / 官方博客 / 专业媒体 / 社区等"
+        }
+      }
+    ]
+  }
+}

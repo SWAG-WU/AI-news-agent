@@ -151,7 +151,7 @@ class NewModelReleaseFilter:
         source = article.get('source', '')
         company = None
         for lab in self.AI_LABS:
-            if lab.lower() in source.lower():
+            if lab and source and lab.lower() in source.lower():
                 company = lab
                 break
 

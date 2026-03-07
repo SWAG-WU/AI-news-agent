@@ -1,0 +1,281 @@
+{
+  "msg_type": "interactive",
+  "card": {
+    "header": {
+      "title": {
+        "tag": "plain_text",
+        "content": "📡 AI前沿日报 | 2026年03月01日"
+      },
+      "template": "blue"
+    },
+    "elements": [
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "📊 今日共收录 **16** 条资讯 + **2** 条特别资讯"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> 🚀 **特别关注：新模型发布**\n*> 检测到重要模型发布，突破常规资讯限制*"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ modelscope/FunASR**\n`📢 GitHub │ 🕒 2026-03-01T14:39:31.355441`\n> A Fundamental End-to-End Speech Recognition Toolkit and Open Source SOTA Pretrained Models, Supporting Speech Recognition, Voice Activity Detection, Text Post-processing etc。\n👉 [查看详情](https://github.com/modelscope/FunASR)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ ComposioHQ/awesome-claude-skills**\n`📢 GitHub │ 🕒 2026-03-01T14:39:31.356281`\n> A curated list of awesome Claude Skills, resources, and tools for customizing Claude AI workflows。\n👉 [查看详情](https://github.com/ComposioHQ/awesome-claude-skills)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🎓 学术研究**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Introducing Prism**\n`🕒 Tue, 27 Jan 2026 00:00:00 GMT`\n> Prism is a free LaTeX-native workspace with GPT-5。\n👉 [查看论文](https://openai.com/index/introducing-prism)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Introducing shopping research in ChatGPT**\n`🕒 Mon, 24 Nov 2025 00:00:00 GMT`\n> Shopping research in ChatGPT helps you explore, compare, and discover products with personalized buyer’s guides that simplify decision-making。\n👉 [查看论文](https://openai.com/index/chatgpt-shopping-research)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🏢 实验室博客**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ EMEA Youth & Wellbeing Grant**\n`📢 OpenAI │ 🕒 Wed, 28 Jan 2026 01:00:00 GMT`\n> Apply for the EMEA Youth & Wellbeing Grant, a €500,000 program funding NGOs and researchers advancing youth safety and wellbeing in the age of AI。\n👉 [阅读原文](https://openai.com/index/emea-youth-and-wellbeing-grant)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ The next chapter for AI in the EU**\n`📢 OpenAI │ 🕒 Wed, 28 Jan 2026 01:00:00 GMT`\n> OpenAI launches the EU Economic Blueprint 2。\n👉 [阅读原文](https://openai.com/index/the-next-chapter-for-ai-in-the-eu)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ UniRG: Scaling medical imaging report generation with multimodal reinforcement learning**\n`📢 Microsoft │ 🕒 Tue, 27 Jan 2026 17:00:00 +0000`\n> At a glance AI-driven medical image report generation can help medical providers become more efficient and productive。\n👉 [阅读原文](https://www.microsoft.com/en-us/research/blog/unirg-scaling-medical-imaging-report-generation-with-multimodal-reinforcement-learning/)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Taisei Corporation shapes the next generation of talent with ChatGPT**\n`📢 OpenAI │ 🕒 Thu, 29 Jan 2026 00:00:00 GMT`\n> Taisei Corporation uses ChatGPT Enterprise to support HR-led talent development and scale generative AI across its global construction business。\n👉 [阅读原文](https://openai.com/index/taisei)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Inside Praktika's conversational approach to language learning**\n`📢 OpenAI │ 🕒 Thu, 22 Jan 2026 05:00:00 GMT`\n> How Praktika uses GPT-4。\n👉 [阅读原文](https://openai.com/index/praktika)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Inside GPT-5 for Work: How Businesses Use GPT-5**\n`📢 OpenAI │ 🕒 Thu, 22 Jan 2026 00:00:00 GMT`\n> A data-driven report on how workers across industries use ChatGPT—covering adoption trends, top tasks, departmental patterns, and the future of AI at work。\n👉 [阅读原文](https://openai.com/business/guides-and-resources/chatgpt-usage-and-adoption-patterns-at-work)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Rethinking imitation learning with Predictive Inverse Dynamics Models**\n`📢 Microsoft │ 🕒 Thu, 05 Feb 2026 17:00:00 +0000`\n> At a glance Imitation learning becomes easier when an AI agent understands why an action is taken。\n👉 [阅读原文](https://www.microsoft.com/en-us/research/blog/rethinking-imitation-learning-with-predictive-inverse-dynamics-models/)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ GPT-5 lowers the cost of cell-free protein synthesis**\n`📢 OpenAI │ 🕒 Thu, 05 Feb 2026 11:00:00 GMT`\n> An autonomous lab combining OpenAI’s GPT-5 with Ginkgo Bioworks’ cloud automation cut cell-free protein synthesis costs by 40% through closed-loop experimentation。\n👉 [阅读原文](https://openai.com/index/gpt-5-lowers-protein-synthesis-cost)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Introducing Trusted Access for Cyber**\n`📢 OpenAI │ 🕒 Thu, 05 Feb 2026 10:00:00 GMT`\n> OpenAI introduces Trusted Access for Cyber, a trust-based framework that expands access to frontier cyber capabilities while strengthening safeguards against misuse。\n👉 [阅读原文](https://openai.com/index/trusted-access-for-cyber)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Snowflake and OpenAI partner to bring frontier intelligence to enterprise data**\n`📢 OpenAI │ 🕒 Mon, 02 Feb 2026 06:00:00 GMT`\n> OpenAI and Snowflake partner in a $200M agreement to bring frontier intelligence into enterprise data, enabling AI agents and insights directly in Snowflake。\n👉 [阅读原文](https://openai.com/index/snowflake-partnership)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🛠️ 工具产品**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ datawhalechina/llm-universe**\n`📢 GitHub │ 🕒 2026-03-01T14:39:32.935624`\n> 本项目是一个面向小白开发者的大模型应用开发教程，在线阅读地址：https://datawhalechina。\n👉 [查看产品](https://github.com/datawhalechina/llm-universe)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ vllm-project/recipes**\n`📢 GitHub │ 🕒 2026-03-01T14:39:32.934310`\n> Common recipes to run vLLM。\n👉 [查看产品](https://github.com/vllm-project/recipes)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Shubhamsaboo/awesome-llm-apps**\n`📢 GitHub │ 🕒 2026-03-01T14:39:31.346330`\n> Collection of awesome LLM apps with AI Agents and RAG using OpenAI, Anthropic, Gemini and opensource models。\n👉 [查看产品](https://github.com/Shubhamsaboo/awesome-llm-apps)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "✅ 数据截至 2026年03月01日 | 来源：arXiv / 官方博客 / 专业媒体 / 社区等"
+        }
+      }
+    ]
+  }
+}

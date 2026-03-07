@@ -1,0 +1,298 @@
+{
+  "msg_type": "interactive",
+  "card": {
+    "header": {
+      "title": {
+        "tag": "plain_text",
+        "content": "📡 AI前沿日报 | 2026年03月01日"
+      },
+      "template": "blue"
+    },
+    "elements": [
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "📊 今日共收录 **16** 条资讯 + **2** 条特别资讯"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> 🚀 **特别关注：新模型发布**\n*> 检测到重要模型发布，突破常规资讯限制*"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ ruvnet/ruflo**\n`🕒 2026-03-01T14:38:01.796409`\n> 🌊 The leading agent orchestration platform for Claude。\n👉 [查看详情](https://github.com/ruvnet/ruflo)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ abhigyanpatwari/GitNexus**\n`🕒 2026-03-01T14:38:01.800391`\n> GitNexus: The Zero-Server Code Intelligence Engine - GitNexus is a client-side knowledge graph creator that runs entirely in your browser。\n👉 [查看详情](https://github.com/abhigyanpatwari/GitNexus)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🎓 学术研究**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Agent Lightning: Adding reinforcement learning to AI agents without code rewrites**\n`👤 Xufang Luo, Yuge Zhang, Zhiyuan He, Zilong Wang, Dongsheng Li, Luna K. Qiu, Yuqing Yang │ 🕒 Thu, 11 Dec 2025 17:00:00 +0000`\n> AI agents are reshaping software development, from writing code to carrying out complex instructions。\n👉 [查看论文](https://www.microsoft.com/en-us/research/blog/agent-lightning-adding-reinforcement-learning-to-ai-agents-without-code-rewrites/)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Paza: Introducing automatic speech recognition benchmarks and models for low resource languages**\n`👤 Mercy Muchai, Kevin  Chege, Nick  Mumero, Stephanie Nyairo │ 🕒 Thu, 05 Feb 2026 05:07:55 +0000`\n> At a glance Microsoft Research releases PazaBench and Paza automatic speech recognition models , advancing speech technology for low resource languages。\n👉 [查看论文](https://www.microsoft.com/en-us/research/blog/paza-introducing-automatic-speech-recognition-benchmarks-and-models-for-low-resource-languages/)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🏢 实验室博客**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Introducing OpenAI for India**\n`📢 OpenAI │ 🕒 Wed, 18 Feb 2026 21:00:00 GMT`\n> OpenAI for India expands AI access across the country—building local infrastructure, powering enterprises, and advancing workforce skills。\n👉 [阅读原文](https://openai.com/index/openai-for-india)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Introducing EVMbench**\n`📢 OpenAI │ 🕒 Wed, 18 Feb 2026 00:00:00 GMT`\n> OpenAI and Paradigm introduce EVMbench, a benchmark evaluating AI agents’ ability to detect, patch, and exploit high-severity smart contract vulnerabilities。\n👉 [阅读原文](https://openai.com/index/introducing-evmbench)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ OpenAI Codex and Figma launch seamless code-to-design experience**\n`📢 OpenAI │ 🕒 Thu, 26 Feb 2026 06:00:00 GMT`\n> OpenAI and Figma launch a new Codex integration that connects code and design, enabling teams to move between implementation and the Figma canvas to iterate and ship faster。\n👉 [阅读原文](https://openai.com/index/figma-partnership)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Advancing independent research on AI alignment**\n`📢 OpenAI │ 🕒 Thu, 19 Feb 2026 10:00:00 GMT`\n> OpenAI commits $7.5M to The Alignment Project to fund independent AI alignment research, strengtheni...\n👉 [阅读原文](https://openai.com/index/advancing-independent-research-ai-alignment)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Introducing GPT-5.3-Codex-Spark**\n`📢 OpenAI │ 🕒 Thu, 12 Feb 2026 10:00:00 GMT`\n> Introducing GPT-5.3-Codex-Spark—our first real-time coding model. 15x faster generation, 128k contex...\n👉 [阅读原文](https://openai.com/index/introducing-gpt-5-3-codex-spark)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Bringing ChatGPT to GenAI.mil**\n`📢 OpenAI │ 🕒 Mon, 09 Feb 2026 11:00:00 GMT`\n> OpenAI for Government announces the deployment of a custom ChatGPT on GenAI。\n👉 [阅读原文](https://openai.com/index/bringing-chatgpt-to-genaimil)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Scaling social science research**\n`📢 OpenAI │ 🕒 Fri, 13 Feb 2026 09:00:00 GMT`\n> GABRIEL is a new open-source toolkit from OpenAI that uses GPT to turn qualitative text and images into quantitative data, helping social scientists analyze research at scale。\n👉 [阅读原文](https://openai.com/index/scaling-social-science-research)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Making AI work for everyone, everywhere: our approach to localization**\n`📢 OpenAI │ 🕒 Fri, 06 Feb 2026 10:00:00 GMT`\n> OpenAI shares its approach to AI localization, showing how globally shared frontier models can be adapted to local languages, laws, and cultures without compromising safety。\n👉 [阅读原文](https://openai.com/index/our-approach-to-localization)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **📰 专业媒体**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Defense secretary Pete Hegseth designates Anthropic a supply chain risk**\n`📢 The Verge │ 🕒 2026-02-27T21:19:16-05:00`\n> US President Donald Trump (R) looks on as US Secretary of Defense Pete Hegseth speaks to the press following US military actions in Venezuela | AFP via Getty Images Nearly two hours after President Donald Trump announced on Truth Social that he was banning Anthropic products from\n👉 [阅读全文](https://www.theverge.com/policy/886632/pentagon-designates-anthropic-supply-chain-risk-ai-standoff)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Trump orders federal agencies to drop Anthropic’s AI**\n`📢 The Verge │ 🕒 2026-02-27T16:30:47-05:00`\n> On Friday afternoon, Donald Trump posted on Truth Social , accusing Anthropic, the AI company behind Claude, of attempting to \"STRONG-ARM\" the Pentagon and directing federal agencies to \"IMMEDIATELY CEASE\" use of its products。\n👉 [阅读全文](https://www.theverge.com/policy/886489/pentagon-anthropic-trump-dod)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ Google’s Nano Banana 2 brings advanced AI image tools to free users**\n`📢 The Verge │ 🕒 2026-02-26T11:00:00-05:00`\n> The image generational capabilities of Nano Banana 2 seem comparable to the Pro model。\n👉 [阅读全文](https://www.theverge.com/tech/885275/google-nano-banana-2-ai-image-model-gemini-launch)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "> **🛠️ 工具产品**"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ QwenLM/Qwen3-VL**\n`📢 GitHub │ 🕒 2026-03-01T14:37:57.208076`\n> Qwen3-VL is the multimodal large language model series developed by Qwen team, Alibaba Cloud。\n👉 [查看产品](https://github.com/QwenLM/Qwen3-VL)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ leggedrobotics/rsl_rl**\n`📢 GitHub │ 🕒 2026-03-01T14:37:55.673085`\n> A fast and simple implementation of learning algorithms for robotics。\n👉 [查看产品](https://github.com/leggedrobotics/rsl_rl)"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "---"
+        }
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "**▸ datawhalechina/hello-agents**\n`📢 GitHub │ 🕒 2026-03-01T14:37:55.668690`\n> 📚 《从零开始构建智能体》——从零开始的智能体原理与实践教程。\n👉 [查看产品](https://github.com/datawhalechina/hello-agents)"
+        }
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "div",
+        "text": {
+          "tag": "lark_md",
+          "content": "✅ 数据截至 2026年03月01日 | 来源：arXiv / 官方博客 / 专业媒体 / 社区等"
+        }
+      }
+    ]
+  }
+}

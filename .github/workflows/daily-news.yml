@@ -7,9 +7,9 @@
 name: AI Daily News Collector
 
 on:
-  # 定时触发：每天 UTC 22:00 = 北京时间 6:00
+  # 定时触发：每天 UTC 01:00 = 北京时间 9:00
   schedule:
-    - cron: '0 22 * * *'  # 北京时间 6:00
+    - cron: '0 1 * * *'  # 北京时间 9:00
 
   # 允许手动触发（用于测试）
   workflow_dispatch:
