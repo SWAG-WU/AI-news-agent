@@ -39,21 +39,6 @@ class SourceConfig(BaseModel):
     news_url: Optional[str] = None
 
 
-class SourceConfig(BaseModel):
-    """单个数据源配置"""
-    base_url: str
-    rss_url: Optional[str] = None
-    search_query: Optional[str] = None
-    max_results: Optional[int] = None
-    sort_by: Optional[str] = None
-    sort_order: Optional[str] = None
-    languages: Optional[List[str]] = None
-    spoken_language: Optional[str] = None
-    since: Optional[str] = None
-    topic: Optional[str] = None
-    news_url: Optional[str] = None
-
-
 class SourceMetadata(BaseModel):
     """信息源元数据"""
     id: str
