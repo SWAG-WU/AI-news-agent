@@ -9,9 +9,8 @@ LLM摘要生成模块
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import json
 
-from zhipuai import ZhipuAI
+import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.config import Config, get_config
@@ -23,16 +22,16 @@ class LLMSummarizer:
     """
     LLM摘要生成器
 
-    使用智谱AI API生成中文摘要。
+    使用 DeepSeek API 生成中文摘要。
     """
 
     def __init__(self, config: Optional[Config] = None):
         self.config = config or get_config()
         self.prompts_dir = Path("prompts")
 
-        # 初始化智谱AI客户端
-        self.client = ZhipuAI(api_key=self.config.zhipuai_api_key)
-        self.model = self.config.zhipuai_model
+        self.api_key = self.config.deepseek_api_key
+        self.base_url = self.config.deepseek_base_url
+        self.model = self.config.deepseek_model
 
         # 加载提示词模板
         self._prompt_template = self._load_prompt_template()
@@ -118,34 +117,46 @@ class LLMSummarizer:
         """调用LLM生成摘要"""
         prompt = self._prompt_template.replace("{{CONTENT}}", content)
 
-        # 使用智谱AI的同步API（在异步上下文中运行）
-        import asyncio
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            None,
-            lambda: self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "你是一位专业的AI科技资讯编辑，擅长生成简洁准确的中文摘要。"
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                temperature=0.3,
-                max_tokens=200,
-            )
-        )
+        if not self.api_key:
+            raise ValueError("DEEPSEEK_API_KEY 未配置")
 
-        summary = response.choices[0].message.content.strip()
+        async with httpx.AsyncClient(timeout=60) as client:
+            response = await client.post(
+                f"{self.base_url}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=self._build_chat_payload(prompt),
+            )
+            response.raise_for_status()
+            data = response.json()
+
+        summary = data["choices"][0]["message"]["content"].strip()
 
         # 清理可能的引号
         summary = summary.strip('"\'""''')
 
         return summary
+
+    def _build_chat_payload(self, prompt: str) -> Dict[str, Any]:
+        """构建 DeepSeek chat/completions 请求体。"""
+        return {
+            "model": self.model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "你是一位专业的AI科技资讯编辑，擅长生成简洁准确的中文摘要。"
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "temperature": 0.3,
+            "max_tokens": 200,
+            "stream": False,
+        }
 
     def _fallback_summary(self, article: Dict[str, Any]) -> str:
         """回退摘要（使用原描述）"""

@@ -402,9 +402,10 @@ class EnvSettings(BaseSettings):
     feishu_webhook_url: str
     feishu_webhook_secret: str = ""
 
-    # 智谱 AI API
-    zhipuai_api_key: str = ""
-    zhipuai_model: str = "glm-4-flash"
+    # DeepSeek API
+    deepseek_api_key: str = ""
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-v4-flash"
 
     # GitHub
     github_token: str = ""
@@ -476,12 +477,16 @@ class Config:
     # ==================== 便捷访问方法 ====================
 
     @property
-    def zhipuai_api_key(self) -> str:
-        return self._env.zhipuai_api_key
+    def deepseek_api_key(self) -> str:
+        return self._env.deepseek_api_key
 
     @property
-    def zhipuai_model(self) -> str:
-        return self._env.zhipuai_model
+    def deepseek_base_url(self) -> str:
+        return (self._env.deepseek_base_url or "https://api.deepseek.com").rstrip("/")
+
+    @property
+    def deepseek_model(self) -> str:
+        return self._env.deepseek_model or "deepseek-v4-flash"
 
     @property
     def github_token(self) -> str:

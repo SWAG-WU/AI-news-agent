@@ -8,7 +8,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 import asyncio
 
@@ -16,6 +16,7 @@ import aiohttp
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from src.config import Config, get_config
+from src.time_utils import parse_datetime_utc
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +203,7 @@ class BaseCollector(ABC):
             "title": article.get("title", "").strip(),
             "description": article.get("description", article.get("summary", article.get("abstract", ""))),
             "published_at": article.get("published_at", article.get("date", article.get("pubDate"))),
-            "source": article.get("source", self.source_config.name if self.source_config else ""),
+            "source": article.get("source", self.source_config._name if self.source_config else ""),
             "category": article.get("category", "tech"),
             "author": article.get("author", ""),
             "tags": article.get("tags", []),
@@ -228,26 +229,11 @@ class BaseCollector(ABC):
             return True  # 无时间信息时不过滤
 
         try:
-            # 尝试解析多种时间格式
-            pub_dt = None
-            for fmt in (
-                "%Y-%m-%d %H:%M:%S",
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M:%SZ",
-                "%Y-%m-%d",
-                "%a, %d %b %Y %H:%M:%S %z",
-                "%a, %d %b %Y %H:%M:%S %Z",
-            ):
-                try:
-                    pub_dt = datetime.strptime(published_at, fmt)
-                    break
-                except ValueError:
-                    continue
-
+            pub_dt = parse_datetime_utc(published_at)
             if pub_dt is None:
                 return True
 
-            cutoff = datetime.now() - timedelta(hours=hours)
+            cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
             return pub_dt >= cutoff
 
         except Exception as e:
@@ -268,9 +254,9 @@ class MultiSourceCollector(BaseCollector):
             try:
                 articles = await self._collect_from_source(source)
                 all_articles.extend(articles)
-                logger.info(f"从 {source.name} 采集到 {len(articles)} 条资讯")
+                logger.info(f"从 {source._name} 采集到 {len(articles)} 条资讯")
             except Exception as e:
-                logger.error(f"从 {source.name} 采集失败: {e}")
+                logger.error(f"从 {source._name} 采集失败: {e}")
 
         return all_articles
 

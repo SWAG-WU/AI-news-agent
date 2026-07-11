@@ -15,9 +15,9 @@
 | Secret 名称 | 说明 | 获取方式 |
 |------------|------|---------|
 | `FEISHU_WEBHOOK_URL` | 飞书机器人 Webhook URL | 飞书群 → 群设置 → 群机器人 → 添加机器人 → 自定义机器人 |
-| `OPENAI_API_KEY` | 智谱 AI API Key | [智谱 AI 开放平台](https://open.bigmodel.cn/) |
-| `OPENAI_BASE_URL` | 智谱 AI API 地址 | `https://open.bigmodel.cn/api/paas/v4/` |
-| `OPENAI_MODEL` | 模型名称 | 如 `glm-4-flash` |
+| `DEEPSEEK_API_KEY` | DeepSeek API Key | [DeepSeek Platform](https://platform.deepseek.com/) |
+| `DEEPSEEK_BASE_URL` | DeepSeek API 地址 | 可选，默认 `https://api.deepseek.com` |
+| `DEEPSEEK_MODEL` | 模型名称 | 如 `deepseek-v4-flash` |
 
 ### 3. 可选配置项
 
@@ -38,9 +38,9 @@
 4. 设置机器人名称和头像
 5. 复制 **Webhook URL**（格式：`https://open.feishu.cn/open-apis/bot/v2/hook/...`）
 
-### 智谱 AI API Key
+### DeepSeek API Key
 
-1. 访问 [智谱 AI 开放平台](https://open.bigmodel.cn/)
+1. 访问 [DeepSeek Platform](https://platform.deepseek.com/)
 2. 注册/登录账号
 3. 进入 **API Key** 页面
 4. 创建新的 API Key 并复制
@@ -118,8 +118,8 @@ schedule:
 
 ### Q4: API 调用失败？
 
-1. 检查 `OPENAI_API_KEY` 和 `OPENAI_BASE_URL` 是否正确
-2. 确认智谱 AI 账户余额是否充足
+1. 检查 `DEEPSEEK_API_KEY` 是否正确
+2. 确认 DeepSeek 账户余额是否充足
 3. 查看日志中的具体错误信息
 
 ---
@@ -151,10 +151,10 @@ python main.py --once
 FEISHU_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/xxx
 FEISHU_WEBHOOK_SECRET=
 
-# 智谱 AI 配置
-OPENAI_API_KEY=your_zhipu_api_key
-OPENAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
-OPENAI_MODEL=glm-4-flash
+# DeepSeek 配置
+DEEPSEEK_API_KEY=your_deepseek_api_key
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-v4-flash
 
 # GitHub 配置（可选）
 GITHUB_TOKEN=ghp_xxx

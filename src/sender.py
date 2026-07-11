@@ -8,6 +8,7 @@
 
 import logging
 import json
+import base64
 import hashlib
 import hmac
 from datetime import datetime
@@ -175,16 +176,15 @@ class FeishuSender:
 
     def _generate_sign(self, timestamp: str) -> str:
         """生成签名"""
-        string_to_sign = f"{timestamp}\n{self.secret}"
+        string_to_sign = f"{timestamp}\n{self.secret}".encode("utf-8")
 
         hmac_obj = hmac.new(
-            self.secret.encode("utf-8"),
-            string_to_sign.encode("utf-8"),
+            string_to_sign,
+            b"",
             digestmod=hashlib.sha256
         )
 
-        sign = hmac_obj.digest()
-        return sign.hex()
+        return base64.b64encode(hmac_obj.digest()).decode("utf-8")
 
     async def _check_rate_limit(self):
         """检查发送限流"""

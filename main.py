@@ -65,6 +65,7 @@ class AINewsAgent:
 
         # 创建组件
         self.collectors = self._create_collectors()
+        self._log_unsupported_sources()
         self.filters = [
             KeywordFilter(self.config),
             ThresholdFilter(self.config),
@@ -89,6 +90,17 @@ class AINewsAgent:
             "blogs": BlogCollector(self.config),
             "github": GithubCollector(self.config),
         }
+
+    def _log_unsupported_sources(self):
+        """记录已启用但当前主流程尚未实现的 source 类型。"""
+        handled_source_ids = {"arxiv_cs_ai", "github_trending_ai"}
+        for source in self.config.sources.get_enabled_sources():
+            if source._type == "scraper" and source._id not in handled_source_ids:
+                logger.warning(
+                    "已启用但暂未实现的 scraper 数据源，将跳过: %s (%s)",
+                    source._name,
+                    source._id,
+                )
 
     async def run(self):
         """执行Agent主流程"""
@@ -116,10 +128,10 @@ class AINewsAgent:
             report = await self._format_report(summarized_news)
 
             # 7. 推送
-            await self._send_report(report, summarized_news)
+            send_result = await self._send_report(report, summarized_news)
 
             # 8. 保存历史
-            await self._save_history(summarized_news)
+            await self._save_history(summarized_news, sent=send_result.get("success", False))
 
             logger.info("=" * 50)
             logger.info("AI资讯收集Agent执行完成")
@@ -235,18 +247,18 @@ class AINewsAgent:
         result = await self.sender.send(report, msg_type)
         if result.get("success"):
             logger.info("  推送成功")
-            # 标记文章为已发送
-            if news:
-                urls = [article.get("url", "") for article in news if article.get("url")]
-                if urls:
-                    count = self.storage.mark_sent_batch(urls)
-                    logger.info(f"  标记 {count} 条文章为已发送")
         else:
             logger.error(f"  推送失败: {result.get('error')}")
+        return result
 
-    async def _save_history(self, news: list):
+    async def _save_history(self, news: list, sent: bool = False):
         """保存到历史记录"""
         logger.info("Step 7: 保存历史记录...")
+        if sent:
+            sent_at = datetime.now().isoformat()
+            for article in news:
+                article["is_sent"] = True
+                article["sent_at"] = sent_at
         count = self.storage.add_batch(news)
         logger.info(f"  保存 {count} 条新记录")
 
@@ -296,10 +308,10 @@ async def main(once: bool = False):
     # 创建调度器
     scheduler = AsyncIOScheduler(timezone=timezone)
 
-    # 添加定时任务：每天6点执行
+    # 添加定时任务：按飞书配置中的 cron 执行
     scheduler.add_job(
         run_agent_job,
-        CronTrigger(hour=6, minute=0),
+        CronTrigger.from_crontab(config.feishu.schedule.cron, timezone=timezone),
         id='daily_news_collection',
         name='AI资讯每日收集',
         replace_existing=True

@@ -20,7 +20,7 @@ git push
 | 名称 | 值 |
 |------|-----|
 | `FEISHU_WEBHOOK_URL` | `https://open.feishu.cn/open-apis/bot/v2/hook/xxxxx` |
-| `ZHIPUAI_API_KEY` | 你的智谱AI API Key |
+| `DEEPSEEK_API_KEY` | 你的 DeepSeek API Key |
 
 > 你的飞书 Webhook URL 在 `.env` 文件中
 

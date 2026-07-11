@@ -8,7 +8,7 @@
 - 🎯 **智能筛选**: 基于关键词、热度指标的多重筛选机制
 - 🔄 **双渠道模式**: 支持单渠道（混合）和双渠道（分类）两种筛选模式
 - 🔄 **自动去重**: 基于URL和内容哈希的智能去重
-- 📝 **LLM摘要**: 使用智谱 AI 生成风格统一的中文摘要
+- 📝 **LLM摘要**: 使用 DeepSeek 生成风格统一的中文摘要
 - 📤 **飞书推送**: 自动推送格式化的日报到飞书群
 - ⏰ **定时执行**: 每天早上9点自动运行
 - ☁️ **GitHub Actions**: 支持云端定时运行，无需本地设备开机
@@ -59,9 +59,8 @@ AI资料收集agent/
 1. 将代码推送到 GitHub 仓库
 2. 在仓库 Settings → Secrets 中配置：
    - `FEISHU_WEBHOOK_URL` - 飞书 Webhook URL
-   - `OPENAI_API_KEY` - 智谱 AI API Key
-   - `OPENAI_BASE_URL` - `https://open.bigmodel.cn/api/paas/v4/`
-   - `OPENAI_MODEL` - 如 `glm-4-flash`
+   - `DEEPSEEK_API_KEY` - DeepSeek API Key
+   - `DEEPSEEK_MODEL` - 如 `deepseek-v4-flash`
 3. 每天早上 9 点自动运行
 
 ### 方式二：本地运行
@@ -91,9 +90,8 @@ cp .env.example .env
 # 编辑 .env 文件，填入实际的配置值
 # 至少需要配置：
 # - FEISHU_WEBHOOK_URL: 飞书机器人webhook地址
-# - OPENAI_API_KEY: 智谱AI API密钥（用于摘要生成）
-# - OPENAI_BASE_URL: 智谱AI API地址
-# - OPENAI_MODEL: 模型名称（如 glm-4-flash）
+# - DEEPSEEK_API_KEY: DeepSeek API密钥（用于摘要生成）
+# - DEEPSEEK_MODEL: 模型名称（如 deepseek-v4-flash）
 ```
 
 ### 3. 配置飞书机器人

@@ -27,6 +27,21 @@ class BlogCollector(MultiSourceCollector):
     支持从多个RSS源采集资讯。
     """
 
+    async def collect(self) -> List[Dict[str, Any]]:
+        """只从启用的 RSS 数据源采集。"""
+        all_articles = []
+        sources = self.config.sources.get_sources_by_type("rss")
+
+        for source in sources:
+            try:
+                articles = await self._collect_from_source(source)
+                all_articles.extend(articles)
+                logger.info(f"从 {source._name} 采集到 {len(articles)} 条资讯")
+            except Exception as e:
+                logger.error(f"从 {source._name} 采集失败: {e}")
+
+        return all_articles
+
     async def _collect_from_source(self, source) -> List[Dict[str, Any]]:
         """从单个博客源采集"""
         # 兼容新旧配置格式
@@ -108,7 +123,7 @@ class BlogCollector(MultiSourceCollector):
             "title": title,
             "description": clean_content[:1000],
             "published_at": published,
-            "source": source.name,
+            "source": source._name,
             "category": article_category,
             "author": author,
             "tags": self._extract_tags(entry),

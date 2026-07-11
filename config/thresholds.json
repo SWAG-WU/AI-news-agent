@@ -41,11 +41,12 @@
   },
   "daily_output": {
     "max_items_per_category": {
-      "highlights": 5,
-      "tech_breakthrough": 15,
-      "industry_news": 15,
-      "policy": 5,
-      "expert_opinion": 5
+      "academic": 3,
+      "lab_blog": 3,
+      "media": 8,
+      "tools": 3,
+      "community": 2,
+      "newsletter": 2
     },
     "min_total_items": 10,
     "fallback_min_total_items": 5

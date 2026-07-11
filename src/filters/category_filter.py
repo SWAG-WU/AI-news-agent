@@ -340,8 +340,8 @@ class CategoryFilter:
         else:
             logger.warning(f"  实验室类文章不足 (0/3)")
 
-        # ========== 第4步：确保达到最低总数，优先选择媒体类 ==========
-        target_min_total = 13  # 最少13条
+        # ========== 第4步：确保达到配置的最低总数，优先选择媒体类 ==========
+        target_min_total = self.min_target_count
         current_count = len(result)
         needed = max(0, target_min_total - current_count)
 
@@ -380,10 +380,10 @@ class CategoryFilter:
                         selected_urls.update(a.get('url', '') for a in additional_articles)
                         logger.info(f"  补充其他类别: {len(additional_articles)} 条")
 
-        # ========== 第5步：如果总数未达上限，可再填充至16条 ==========
+        # ========== 第5步：如果总数未达配置上限，继续填充 ==========
         current_count = len(result)
-        if current_count < 16:
-            additional_needed = 16 - current_count
+        if current_count < self.max_target_count:
+            additional_needed = self.max_target_count - current_count
             all_remaining = [a for a in articles if a.get('url', '') not in selected_urls]
             if all_remaining:
                 # 优先选择媒体类文章
@@ -407,6 +407,12 @@ class CategoryFilter:
                 result.extend(additional_articles)
                 selected_urls.update(a.get('url', '') for a in additional_articles)
                 logger.info(f"  额外填充: {len(additional_articles)} 条 (总数增至{len(result)})")
+
+        if len(result) > self.max_target_count:
+            sorted_result = self._sort_articles_by_recency_and_score(result)
+            result = sorted_result[:self.max_target_count]
+            selected_urls = set(a.get('url', '') for a in result)
+            logger.info(f"  按配置上限截断至 {len(result)} 条")
 
         # ========== 第6步：检测新模型发布，额外添加（不占用基础名额）==========
         new_model_articles = []
@@ -643,7 +649,7 @@ class CategoryFilter:
             timestamp = published_at.timestamp() if published_at else 0
             # 综合排序：优先较新，然后按评分
             # 使用负时间戳让越新的排在前面
-            return (-timestamp, score)
+            return (-timestamp, -score)
 
         return sorted(articles, key=sort_key, reverse=False)
 

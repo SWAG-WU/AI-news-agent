@@ -1,7 +1,7 @@
 # ============================================================
 # AI 资讯收集 Agent - GitHub Actions 定时任务
 # ============================================================
-# 功能：每天北京时间 6:00 自动采集 AI 前沿资讯并推送到飞书
+# 功能：每天北京时间 9:00 自动采集 AI 前沿资讯并推送到飞书
 # ============================================================
 
 name: AI Daily News Collector
@@ -55,11 +55,13 @@ jobs:
           # 飞书签名验证密钥（可选，增强安全性）
           FEISHU_WEBHOOK_SECRET: ${{ secrets.FEISHU_WEBHOOK_SECRET }}
 
-          # ========== 智谱 AI API 配置 ==========
+          # ========== DeepSeek API 配置 ==========
           # API Key（必需）
-          ZHIPUAI_API_KEY: ${{ secrets.ZHIPUAI_API_KEY }}
-          # 模型名称（必需，如: glm-4-flash / glm-4-plus）
-          ZHIPUAI_MODEL: ${{ secrets.ZHIPUAI_MODEL }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          # API 地址（可选）
+          DEEPSEEK_BASE_URL: ${{ secrets.DEEPSEEK_BASE_URL }}
+          # 模型名称（必需，如: deepseek-v4-flash / deepseek-v4-pro）
+          DEEPSEEK_MODEL: ${{ secrets.DEEPSEEK_MODEL }}
 
           # ========== GitHub 配置 ==========
           # GitHub Token（可选，用于访问 GitHub API 提高 rate limit）

@@ -8,9 +8,10 @@
 
 import logging
 from typing import Any, Dict, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.config import Config, get_config
+from src.time_utils import parse_datetime_utc
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +203,7 @@ class ThresholdFilter:
             if not pub_dt:
                 return 0.5
 
-            hours_ago = (datetime.now() - pub_dt).total_seconds() / 3600
+            hours_ago = (datetime.now(timezone.utc) - pub_dt).total_seconds() / 3600
 
             # 24小时内给满分，之后递减
             if hours_ago <= 24:
@@ -267,7 +268,7 @@ class ThresholdFilter:
                 return True
 
             hours = self.thresholds.time.primary_window_hours
-            cutoff = datetime.now() - timedelta(hours=hours)
+            cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
             return pub_dt >= cutoff
 
         except Exception:
@@ -317,21 +318,4 @@ class ThresholdFilter:
     @staticmethod
     def _parse_datetime(dt_str: str) -> datetime | None:
         """解析日期时间字符串"""
-        if not dt_str:
-            return None
-
-        formats = [
-            "%Y-%m-%d %H:%M:%S",
-            "%Y-%m-%dT%H:%M:%S",
-            "%Y-%m-%dT%H:%M:%SZ",
-            "%Y-%m-%d",
-            "%a, %d %b %Y %H:%M:%S %z",
-        ]
-
-        for fmt in formats:
-            try:
-                return datetime.strptime(dt_str, fmt)
-            except ValueError:
-                continue
-
-        return None
+        return parse_datetime_utc(dt_str)

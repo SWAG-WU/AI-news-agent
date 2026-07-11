@@ -19,6 +19,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.sql import func
 
 from src.config import get_config
+from src.time_utils import parse_datetime_naive_utc
 
 Base = declarative_base()
 
@@ -176,6 +177,8 @@ class SQLiteStorage:
                 summary=article.get("summary", ""),
                 keywords=json.dumps(article.get("keywords", []), ensure_ascii=False),
                 published_at=self._parse_datetime(article.get("published_at")),
+                sent_at=self._parse_datetime(article.get("sent_at")),
+                is_sent=bool(article.get("is_sent", False)),
                 score=article.get("score", 0),
             )
 
@@ -371,29 +374,7 @@ class SQLiteStorage:
         if not dt_str:
             return None
         try:
-            # 尝试多种格式
-            for fmt in (
-                "%Y-%m-%d %H:%M:%S",
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M:%SZ",
-                "%Y-%m-%d",
-                # RFC 2822 format (RSS常用格式)
-                "%a, %d %b %Y %H:%M:%S %z",
-                "%a, %d %b %Y %H:%M:%S GMT",
-            ):
-                try:
-                    return datetime.strptime(dt_str, fmt)
-                except ValueError:
-                    continue
-
-            # 尝试使用 email.utils 解析 RFC 2822 格式
-            try:
-                from email.utils import parsedate_to_datetime
-                return parsedate_to_datetime(dt_str)
-            except Exception:
-                pass
-
-            return None
+            return parse_datetime_naive_utc(dt_str)
         except Exception:
             return None
 

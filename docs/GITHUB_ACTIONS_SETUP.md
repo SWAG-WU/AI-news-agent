@@ -32,14 +32,14 @@ git push
 |------------|-----|------|
 | `FEISHU_WEBHOOK_URL` | 你的飞书 Webhook URL | 必填 |
 | `FEISHU_WEBHOOK_SECRET` | 飞书 Webhook 密钥（可选） | 可选 |
-| `ZHIPUAI_API_KEY` | 智谱 AI API Key | 必填 |
+| `DEEPSEEK_API_KEY` | DeepSeek API Key | 必填 |
 
 **获取飞书 Webhook URL：**
 1. 在飞书群中添加自定义机器人
 2. 复制 Webhook URL
 
-**获取智谱 AI API Key：**
-1. 访问 https://open.bigmodel.cn/
+**获取 DeepSeek API Key：**
+1. 访问 https://platform.deepseek.com/
 2. 注册并获取 API Key
 
 ### 3. 启用 GitHub Actions
